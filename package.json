@@ -1,0 +1,29 @@
+{
+    "name": "@remobile/react-native-live",
+        "version": "1.0.1",
+        "description": "A marquee label for react-native",
+        "main": "index.js",
+        "author": {
+            "name": "YunJiang.Fang",
+            "email": "42550564@qq.com"
+        },
+        "license": "MIT",
+        "keywords": [
+            "react-native",
+            "react-component",
+            "ios",
+            "android",
+            "marquee",
+            "label",
+            "remobile",
+            "mobile"
+        ],
+        "homepage": "https://github.com/remobile/react-native-live",
+        "bugs": {
+            "url": "https://github.com/remobile/react-native-live/issues"
+        },
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/remobile/react-native-live.git"
+        }
+}
