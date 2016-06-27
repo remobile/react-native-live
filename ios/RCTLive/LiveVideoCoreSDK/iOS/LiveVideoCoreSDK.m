@@ -28,7 +28,7 @@
 }
 
 
-- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate{
+- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate Delegate:(id<LIVEVCSessionDelegate>)delegate{
     if (self) {
         _livesession = [[VCSimpleSession alloc] initWithVideoSize:videSize frameRate:iFrameRate bitrate:iBitRate useInterfaceOrientation:YES];
         
@@ -40,6 +40,8 @@
         [previewView addSubview:_livesession.previewView];
         _livesession.previewView.frame = previewView.bounds;
         
+        self.delegate = delegate;
+        [_livesession startRtmpSessionWithURL:_rtmpUrl];
         NSLog(@"rtmpUrl=%@\r\nwidth=%.2f, height=%.2f, bitRate=%lu, frameRate=%lu", rtmpUrl, videSize.width, videSize.height, (unsigned long)iBitRate, (unsigned long)iFrameRate);
         
     }
@@ -48,18 +50,9 @@
 }
 
 - (void)LiveRelease{
+    [_livesession endRtmpSession];
     _livesession = nil;
     NSLog(@"LiveRelease: %@", _rtmpUrl);
-}
-
-- (void)connect {
-    NSLog(@"connect: %@", _rtmpUrl);
-    [_livesession startRtmpSessionWithURL:_rtmpUrl];
-}
-
-- (void)disconnect {
-    NSLog(@"disconnect: %@", _rtmpUrl);
-    [_livesession endRtmpSession];
 }
 
 - (void)setFilter:(LIVE_FILTER_TYPE) type{

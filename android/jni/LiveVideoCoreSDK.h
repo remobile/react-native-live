@@ -66,7 +66,6 @@ public:
     VCSimpleSession _livesession;
     std::string _rtmpUrl;
 public:
-    LiveVideoCoreSDK *sharedinstance();
     void LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate);
 
     void LiveRelease();

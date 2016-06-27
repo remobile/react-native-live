@@ -8,7 +8,6 @@ import android.view.WindowManager;
 
 public class RCTLiveView extends ViewGroup implements LiveVideoCoreSDK.VCSessionDelegate {
     private final Context _context;
-    private LiveVideoCoreSDK sdk;
     private String url;
     private  boolean horizontal;
     private int videoSize; //0:cif 1:d1 2:720p
@@ -26,14 +25,11 @@ public class RCTLiveView extends ViewGroup implements LiveVideoCoreSDK.VCSession
     }
 
     private void start() {
-        sdk.LiveInit(url, this, videoSize, bitRate, frameRate);
-        sdk.delegate = this;
-        sdk.connect();
+        LiveVideoCoreSDK.LiveInit(url, this, videoSize, bitRate, frameRate, this);
     }
 
     private void stop() {
-        sdk.disconnect();
-        sdk.LiveRelease();
+        LiveVideoCoreSDK.LiveRelease();
     }
 
     @Override

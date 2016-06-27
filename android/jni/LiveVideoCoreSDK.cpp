@@ -8,13 +8,56 @@
 
 #include "LiveVideoCoreSDK.h"
 
-LiveVideoCoreSDK *sharedinstance()
+extern "C"
 {
-    static LiveVideoCoreSDK *s_instance = NULL;
-    if (NULL == s_instance) {
-        s_instance = new LiveVideoCoreSDK();
+    JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv * env, jobject object);
+    JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv * env, jobject object);
+}
+
+static LiveVideoCoreSDK *liveVideoCoreSDK = NULL;
+
+std::string jstring2str(JNIEnv* env, jstring jstr)
+{
+    char* rtn = NULL;
+    jclass clsstring = env->FindClass("java/lang/String");
+    jstring strencode = env->NewStringUTF("utf-8");
+    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
+    jbyteArray barr =  (jbyteArray)env->CallObjectMethod(jstr,mid,strencode);
+    jsize alen = env->GetArrayLength(barr);
+    jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
+    if(alen >  0) {
+        rtn = (char *)malloc(alen+1);
+        memcpy(rtn,ba,alen);
+        rtn[alen]=0;
     }
-    return s_instance;
+    env->ReleaseByteArrayElements(barr,ba,0);
+    std::string stemp(rtn);
+    free(rtn);
+    return stemp;
+}
+
+JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *env, jobject object, jstring jRtmpUrl, jobject jPreviewView, jint jWidth, jint jHeight, jint jBitRate, jint jFrameRate) {
+    if (NULL == liveVideoCoreSDK) {
+        JavaVM* jvm = NULL;
+        env->GetJavaVM(&jvm);
+        
+        std::string rtmpUrl = jstring2str(env, jRtmpUrl);
+        void* previewView = (void *)jPreviewView;
+        CGSize videSize = {width: jWidth, height: jHeight};
+        LIVE_BITRATE iBitRate = (LIVE_BITRATE)jBitRate;
+        LIVE_FRAMERATE iFrameRate = (LIVE_FRAMERATE)jFrameRate;
+        
+        liveVideoCoreSDK = new liveVideoCoreSDK(jvm, object);
+        liveVideoCoreSDK->LiveInit(rtmpUrl, previewView, videSize, (LIVE_BITRATE)iBitRate, (LIVE_FRAMERATE)iFrameRate);
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv *env, jobject object) {
+    if (NULL != liveVideoCoreSDK) {
+        liveVideoCoreSDK->LiveRelease();
+        delete liveVideoCoreSDK;
+        liveVideoCoreSDK = NULL;
+    }
 }
 
 void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate)
@@ -26,23 +69,15 @@ void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize v
 //    [previewView addSubview:_livesession.previewView];
 //    _livesession.previewView.frame = previewView.bounds;
     
+    _livesession.startRtmpSessionWithURL(_rtmpUrl);
     DLog("rtmpUrl=%s\r\nwidth=%.2f, height=%.2f, bitRate=%lu, frameRate=%lu",
           rtmpUrl.c_str(), videSize.width, videSize.height, (unsigned long)iBitRate, (unsigned long)iFrameRate);
 }
 
 - (void)LiveRelease{
+    _livesession.endRtmpSession();
     _livesession.release();
     DLog("LiveRelease: %s", _rtmpUrl.c_str());
-}
-
-- (void)connect {
-    DLog("connect: %s", _rtmpUrl.c_str());
-    _livesession.startRtmpSessionWithURL(_rtmpUrl);
-}
-
-- (void)disconnect {
-    DLog("disconnect: %s", _rtmpUrl.c_str());
-    _livesession.endRtmpSession();
 }
 
 - (void)setFilter:(LIVE_FILTER_TYPE) type

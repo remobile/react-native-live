@@ -65,12 +65,8 @@ typedef NS_ENUM(NSUInteger, LIVE_FILTER_TYPE) {
 @property (atomic, weak)   id<LIVEVCSessionDelegate> delegate;
 @property (atomic, assign) float micGain;//0~1.0
 
-- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate;
-
+- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate Delegate:(id<LIVEVCSessionDelegate>)delegate;
 - (void)LiveRelease;
-
-- (void)connect;
-- (void)disconnect;
 
 - (void)setCameraFront:(Boolean)bCameraFrontFlag;
 - (void)setFilter:(LIVE_FILTER_TYPE) type;

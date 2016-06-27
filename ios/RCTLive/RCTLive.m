@@ -6,17 +6,6 @@
 #import "UIView+React.h"
 #import <AVFoundation/AVFoundation.h>
 
-#define MAX_DEFAULT_PROPS_INDEX (3)
-#define CHECK_METHOD(t) \
-do { \
-    if (__hasAllPropertySet < MAX_DEFAULT_PROPS_INDEX) { \
-        __hasAllPropertySet++; \
-    } else if (!__hasStart) { \
-        [self start]; \
-    } else { \
-        [self set##t##Method]; \
-    } \
-} while (0)
 
 @interface RCTLive ()
 @property (nonatomic, weak) RCTBridge *bridge;
@@ -24,8 +13,6 @@ do { \
 
 @implementation RCTLive
 {
-    NSInteger __hasAllPropertySet;
-    BOOL __hasStart;
     LiveVideoCoreSDK *sdk;
 }
 
@@ -69,14 +56,11 @@ do { \
 }
 
 - (void)start {
-    [sdk LiveInit:self.url Preview:self VideSize:[self getVideoSize] BitRate:self.bitRate FrameRate:self.frameRate];
-    sdk.delegate = self;
-    [sdk connect];
+    [sdk LiveInit:self.url Preview:self VideSize:[self getVideoSize] BitRate:self.bitRate FrameRate:self.frameRate Delegate:self];
     sdk.micGain = 5;
 }
 
 - (void)stop {
-    [sdk disconnect];
     [sdk LiveRelease];
 }
 
