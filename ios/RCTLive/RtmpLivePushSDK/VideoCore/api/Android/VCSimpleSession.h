@@ -61,7 +61,7 @@ public:
     CGPoint       exposurePointOfInterest;
     VCSessionDelegate *delegate;
 public:
-    VCPreviewView* _previewView;
+    void* _previewView;
     
     std::shared_ptr<videocore::simpleApi::PixelBufferOutput> m_pbOutput;
     std::shared_ptr<videocore::Android::MicSource>               m_micSource;
@@ -118,7 +118,22 @@ public:
     CGPoint _exposurePOI;
     
     VCFilter _filter;
-    
+public:
+    void setVideoSize(CGSize videoSize);
+    void setOrientationLocked(BOOL orientationLocked);
+    void setTorch(BOOL torch);
+    void setAspectMode(VCAspectMode aspectMode);
+    void setCameraState(VCCameraState cameraState);
+    void setRtmpSessionState(VCSessionState rtmpSessionState);
+    void setVideoZoomFactor(float videoZoomFactor);
+    void setAudioChannelCount(int channelCount);
+    void setAudioSampleRate(float sampleRate);
+    void setMicGain(float micGain);
+    void setContinuousAutofocus(BOOL continuousAutofocus);
+    void setContinuousExposure(BOOL continuousExposure);
+    void setFocusPointOfInterest(CGPoint focusPointOfInterest);
+    void setExposurePointOfInterest(CGPoint exposurePointOfInterest);
+    void setUseAdaptiveBitrate(BOOL useAdaptiveBitrate);
 public:
     void setupGraph();
     void initWithVideoSize:(CGSize videoSize, int fps, int bps, BOOL useInterfaceOrientation, VCCameraState cameraState, VCAspectMode aspectMode);
