@@ -8,7 +8,7 @@ typedef struct {
     float y;
 } CGPoint;
 
-typedef struct CGSize {
+typedef struct {
     float width;
     float height;
 } CGSize;
@@ -53,7 +53,7 @@ public:
     virtual void connectionStatusChanged(VCSessionState sessionState) = 0;
     virtual void didAddCameraSource(VCSimpleSession *session);
     virtual void detectedThroughput(int throughputInBytesPerSecond, int videoRate);
-}
+};
 
 class VCSimpleSession {
 public:

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		320D3AD61D1D0C0E002648CF /* LiveVideoCoreSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 320D3AD51D1D0C0E002648CF /* LiveVideoCoreSDK.m */; };
-		320D3ADA1D1D0C25002648CF /* LiveVideoCoreSDK.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320D3AD91D1D0C25002648CF /* LiveVideoCoreSDK.cpp */; };
 		B7827FF31C8685AE0057E507 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7827FF21C8685AE0057E507 /* CoreVideo.framework */; };
 		B7827FF51C8685BC0057E507 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7827FF41C8685BC0057E507 /* VideoToolbox.framework */; };
 		B7827FF71C8685C90057E507 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7827FF61C8685C90057E507 /* OpenGLES.framework */; };
@@ -46,8 +45,6 @@
 /* Begin PBXFileReference section */
 		320D3AD41D1D0C0E002648CF /* LiveVideoCoreSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LiveVideoCoreSDK.h; path = LiveVideoCoreSDK/iOS/LiveVideoCoreSDK.h; sourceTree = "<group>"; };
 		320D3AD51D1D0C0E002648CF /* LiveVideoCoreSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LiveVideoCoreSDK.m; path = LiveVideoCoreSDK/iOS/LiveVideoCoreSDK.m; sourceTree = "<group>"; };
-		320D3AD81D1D0C25002648CF /* LiveVideoCoreSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LiveVideoCoreSDK.h; sourceTree = "<group>"; };
-		320D3AD91D1D0C25002648CF /* LiveVideoCoreSDK.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LiveVideoCoreSDK.cpp; sourceTree = "<group>"; };
 		3284D32D1D113FB000FEB2B4 /* RtmpLivePushSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RtmpLivePushSDK.xcodeproj; path = RtmpLivePushSDK/RtmpLivePushSDK.xcodeproj; sourceTree = SOURCE_ROOT; };
 		B7827FF21C8685AE0057E507 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		B7827FF41C8685BC0057E507 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
@@ -83,16 +80,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		320D3AD71D1D0C25002648CF /* Android */ = {
-			isa = PBXGroup;
-			children = (
-				320D3AD81D1D0C25002648CF /* LiveVideoCoreSDK.h */,
-				320D3AD91D1D0C25002648CF /* LiveVideoCoreSDK.cpp */,
-			);
-			name = Android;
-			path = LiveVideoCoreSDK/Android;
-			sourceTree = "<group>";
-		};
 		3284D32E1D113FB000FEB2B4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -104,7 +91,6 @@
 		B7CE54341C867E0E00437FF2 = {
 			isa = PBXGroup;
 			children = (
-				320D3AD71D1D0C25002648CF /* Android */,
 				320D3AD41D1D0C0E002648CF /* LiveVideoCoreSDK.h */,
 				320D3AD51D1D0C0E002648CF /* LiveVideoCoreSDK.m */,
 				B7CE543F1C867E0E00437FF2 /* LiveVideoCoreSDK */,
@@ -219,7 +205,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				320D3AD61D1D0C0E002648CF /* LiveVideoCoreSDK.m in Sources */,
-				320D3ADA1D1D0C25002648CF /* LiveVideoCoreSDK.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
