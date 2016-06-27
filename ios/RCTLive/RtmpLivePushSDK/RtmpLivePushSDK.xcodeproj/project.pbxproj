@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		320D3ACE1D1CE88D002648CF /* CameraSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320D3AC91D1CE88D002648CF /* CameraSource.cpp */; };
+		320D3ACF1D1CE88D002648CF /* MicSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320D3ACC1D1CE88D002648CF /* MicSource.cpp */; };
+		320D3AE01D1D0CB9002648CF /* VCPreviewView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320D3ADD1D1D0CB9002648CF /* VCPreviewView.cpp */; };
+		320D3AE11D1D0CB9002648CF /* VCSimpleSession.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 320D3ADF1D1D0CB9002648CF /* VCSimpleSession.cpp */; };
 		B7BBA81F1CA3BEC900D05AEF /* UriCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA7551CA3BEC800D05AEF /* UriCodec.cpp */; };
 		B7BBA8201CA3BEC900D05AEF /* VCPreviewView.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA75B1CA3BEC800D05AEF /* VCPreviewView.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		B7BBA8211CA3BEC900D05AEF /* VCSimpleSession.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA75D1CA3BEC800D05AEF /* VCSimpleSession.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -69,6 +73,17 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		320D3AC91D1CE88D002648CF /* CameraSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CameraSource.cpp; sourceTree = "<group>"; };
+		320D3ACA1D1CE88D002648CF /* CameraSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraSource.h; sourceTree = "<group>"; };
+		320D3ACB1D1CE88D002648CF /* GLESUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLESUtil.h; sourceTree = "<group>"; };
+		320D3ACC1D1CE88D002648CF /* MicSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MicSource.cpp; sourceTree = "<group>"; };
+		320D3ACD1D1CE88D002648CF /* MicSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MicSource.h; sourceTree = "<group>"; };
+		320D3AD11D1D04E1002648CF /* PixelBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PixelBuffer.cpp; sourceTree = "<group>"; };
+		320D3AD21D1D04E1002648CF /* PixelBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PixelBuffer.h; sourceTree = "<group>"; };
+		320D3ADC1D1D0CB9002648CF /* VCPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VCPreviewView.h; sourceTree = "<group>"; };
+		320D3ADD1D1D0CB9002648CF /* VCPreviewView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VCPreviewView.cpp; sourceTree = "<group>"; };
+		320D3ADE1D1D0CB9002648CF /* VCSimpleSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VCSimpleSession.h; sourceTree = "<group>"; };
+		320D3ADF1D1D0CB9002648CF /* VCSimpleSession.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VCSimpleSession.cpp; sourceTree = "<group>"; };
 		B7BB88051CA3BA7D00D05AEF /* libRtmpLivePushSDK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRtmpLivePushSDK.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7BB88151CA3BEB000D05AEF /* accumulators.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = accumulators.hpp; sourceTree = "<group>"; };
 		B7BB88161CA3BEB000D05AEF /* accumulators_fwd.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = accumulators_fwd.hpp; sourceTree = "<group>"; };
@@ -7211,6 +7226,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		320D3AC81D1CE88D002648CF /* Android */ = {
+			isa = PBXGroup;
+			children = (
+				320D3AC91D1CE88D002648CF /* CameraSource.cpp */,
+				320D3ACA1D1CE88D002648CF /* CameraSource.h */,
+				320D3ACB1D1CE88D002648CF /* GLESUtil.h */,
+				320D3ACC1D1CE88D002648CF /* MicSource.cpp */,
+				320D3ACD1D1CE88D002648CF /* MicSource.h */,
+			);
+			name = Android;
+			path = android;
+			sourceTree = "<group>";
+		};
+		320D3AD01D1D04E1002648CF /* Android */ = {
+			isa = PBXGroup;
+			children = (
+				320D3AD11D1D04E1002648CF /* PixelBuffer.cpp */,
+				320D3AD21D1D04E1002648CF /* PixelBuffer.h */,
+			);
+			path = Android;
+			sourceTree = "<group>";
+		};
+		320D3ADB1D1D0CB9002648CF /* Android */ = {
+			isa = PBXGroup;
+			children = (
+				320D3ADC1D1D0CB9002648CF /* VCPreviewView.h */,
+				320D3ADD1D1D0CB9002648CF /* VCPreviewView.cpp */,
+				320D3ADE1D1D0CB9002648CF /* VCSimpleSession.h */,
+				320D3ADF1D1D0CB9002648CF /* VCSimpleSession.cpp */,
+			);
+			path = Android;
+			sourceTree = "<group>";
+		};
 		B7BB87FC1CA3BA7D00D05AEF = {
 			isa = PBXGroup;
 			children = (
@@ -18634,6 +18682,7 @@
 		B7BBA7581CA3BEC800D05AEF /* api */ = {
 			isa = PBXGroup;
 			children = (
+				320D3ADB1D1D0CB9002648CF /* Android */,
 				B7BBA7591CA3BEC800D05AEF /* iOS */,
 			);
 			path = api;
@@ -18854,6 +18903,7 @@
 		B7BBA7E21CA3BEC800D05AEF /* sources */ = {
 			isa = PBXGroup;
 			children = (
+				320D3AC81D1CE88D002648CF /* Android */,
 				B7BBA7E31CA3BEC800D05AEF /* Apple */,
 				B7BBA7E61CA3BEC800D05AEF /* iOS */,
 				B7BBA7EC1CA3BEC800D05AEF /* ISource.hpp */,
@@ -18927,6 +18977,7 @@
 		B7BBA7FB1CA3BEC800D05AEF /* pixelBuffer */ = {
 			isa = PBXGroup;
 			children = (
+				320D3AD01D1D04E1002648CF /* Android */,
 				B7BBA7FC1CA3BEC800D05AEF /* Apple */,
 				B7BBA7FF1CA3BEC800D05AEF /* GenericPixelBuffer.cpp */,
 				B7BBA8001CA3BEC800D05AEF /* GenericPixelBuffer.h */,
@@ -19094,13 +19145,17 @@
 				B7BBA8451CA3BEC900D05AEF /* Split.cpp in Sources */,
 				B7BBA8231CA3BEC900D05AEF /* AntiqueVideoFilter.cpp in Sources */,
 				B7BBA83E1CA3BEC900D05AEF /* MP4Multiplexer.mm in Sources */,
+				320D3AE01D1D0CB9002648CF /* VCPreviewView.cpp in Sources */,
 				B7BBA81F1CA3BEC900D05AEF /* UriCodec.cpp in Sources */,
 				B7BBA8241CA3BEC900D05AEF /* BasicVideoFilterBGRA.cpp in Sources */,
+				320D3ACF1D1CE88D002648CF /* MicSource.cpp in Sources */,
 				B7BBA8351CA3BEC900D05AEF /* PixelBufferSource.mm in Sources */,
+				320D3ACE1D1CE88D002648CF /* CameraSource.cpp in Sources */,
 				B7BBA8371CA3BEC900D05AEF /* MicSource.mm in Sources */,
 				B7BBA8391CA3BEC900D05AEF /* TCPThroughputAdaptation.cpp in Sources */,
 				B7BBA8201CA3BEC900D05AEF /* VCPreviewView.mm in Sources */,
 				B7BBA83C1CA3BEC900D05AEF /* GenericPixelBuffer.cpp in Sources */,
+				320D3AE11D1D0CB9002648CF /* VCSimpleSession.cpp in Sources */,
 				B7BBA82C1CA3BEC900D05AEF /* GenericAudioMixer.cpp in Sources */,
 				B7BBA8421CA3BEC900D05AEF /* PositionTransform.cpp in Sources */,
 				B7BBA8341CA3BEC900D05AEF /* LibRtmpSessionMgr.cpp in Sources */,

@@ -1,0 +1,26 @@
+VCSimpleSession.mm
+1.整体流程
+    LiveInit -> connect
+    LiveInit 创建一个VCSimpleSession，通过initWithVideoSize设置基本信息，同时设置previewView
+    initWithVideoSize -> setupGraph
+    这时创建previewView，之后处理过的buffer就显示在这个perviewView上面
+
+    connect -> startRtmpSessionWithURL -> kClientStateSessionStarted -> addEncodersAndPacketizers
+    addEncodersAndPacketizers用来设置编码器和发布包流程
+
+
+2.video流程
+  m_cameraSource->pixelBufferRef -> PixelBuffer -> aspectTransform 【采集需要对应android】
+  aspectTransform 做了 scale 处理
+  -> positionTransform
+  positionTransform 记录位置关系
+  -> GLESVideoMixer
+  GLESVideoMixer做一些filter的处理, 【这里需要处理android的opengl的处理，需要调研pixelBuffer的读取】
+  -> videoSplit(Split)
+  Split作为分流的作用，可以输出到多个output
+  -> PixelBufferOutput m_h264Encoder
+  PixelBufferOutput 没有干什么事情，只是转发给m_callback， 显示在preview上(这个output不在传递)
+  m_h264Encoder 做h264编码 releaseFrame 设置 sps 和 pps 和 outBuff 【需要对应的改为android编码, 或者软编码】
+  ->m_h264Split(Split)->m_h264Packetizer
+  m_h264Packetizer做了一些封装处理，这是一个公共模块
+  ->IOutputSession(LibRtmpSessionMgr)(公共模块)

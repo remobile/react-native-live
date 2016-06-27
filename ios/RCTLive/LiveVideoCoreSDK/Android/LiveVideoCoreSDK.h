@@ -6,9 +6,8 @@
 //  Copyright © 2016年 com.Alex. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <AVFoundation/AVFoundation.h>
-#import "../RtmpLivePushSDK/VideoCore/api/IOS/VCSimpleSession.h"
+
+#import "../../RtmpLivePushSDK/VideoCore/api/Android/VCSimpleSession.h"
 
 #define LIVE_VIDEO_DEF_WIDTH  360
 #define LIVE_VIDEO_DEF_HEIGHT 640
@@ -53,31 +52,33 @@ typedef NS_ENUM(NSUInteger, LIVE_FILTER_TYPE) {
     LIVE_FILTER_BLACK
 };
 
-@protocol LIVEVCSessionDelegate <NSObject>
-@required
-- (void) LiveConnectionStatusChanged: (LIVE_VCSessionState) sessionState;
-@end
+class LIVEVCSessionDelegate
+{
+    virtual void LiveConnectionStatusChanged(LIVE_VCSessionState sessionState) = 0;
+};
 
-@interface LiveVideoCoreSDK : NSObject<VCSessionDelegate>
+class LiveVideoCoreSDK : NSObject<VCSessionDelegate>
+{
+public:
+    LIVEVCSessionDelegate* delegate;
+    float micGain;//0~1.0
+public:
+    VCSimpleSession _livesession;
+    std::string _rtmpUrl;
+public:
+    LiveVideoCoreSDK *sharedinstance();
+    void LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate);
 
-+ (instancetype)sharedinstance;
+    void LiveRelease();
 
-@property (atomic, weak)   id<LIVEVCSessionDelegate> delegate;
-@property (atomic, assign) float micGain;//0~1.0
+    void connect();
+    void disconnect();
 
-- (void)LiveInit:(NSURL*)rtmpUrl Preview:(UIView*)previewView;
-- (void)LiveInit:(NSURL*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate;
+    void setCameraFront(Boolean bCameraFrontFlag);
+    void setFilter(LIVE_FILTER_TYPE type);
 
-- (void)LiveRelease;
-
-- (void)connect;
-- (void)disconnect;
-
-- (void)setCameraFront:(Boolean)bCameraFrontFlag;
-- (void)setFilter:(LIVE_FILTER_TYPE) type;
-
-- (void)focuxAtPoint:(CGPoint)point;
-//VCSessionDelegate protocal
-- (void) connectionStatusChanged: (VCSessionState) sessionState;
-
-@end
+    void focuxAtPoint(CGPoint point);
+    //VCSessionDelegate protocal
+    void connectionStatusChanged(VCSessionState sessionState);
+    
+};

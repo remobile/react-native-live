@@ -23,7 +23,6 @@ RCT_EXPORT_MODULE()
 
 - (UIView *)view {
     RCTLive *view = [[RCTLive alloc]initWithBridge:self.bridge];
-
     return view;
 }
 

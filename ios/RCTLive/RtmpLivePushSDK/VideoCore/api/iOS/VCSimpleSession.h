@@ -136,8 +136,7 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 
 // -----------------------------------------------------------------------------
 
-- (void) startRtmpSessionWithURL:(NSString*) rtmpUrl
-                    andStreamKey:(NSString*) streamKey;
+- (void) startRtmpSessionWithURL:(NSString*)rtmpUrl;
 
 - (void) endRtmpSession;
 

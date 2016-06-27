@@ -24,7 +24,7 @@ var Live = React.createClass({
         return (
             <RCTLive  {...this.props}/>
         );
-    }
+     }
 });
 
 var RCTLive = requireNativeComponent('RCTLive', Live);
