@@ -1,47 +1,37 @@
 package com.remobile.live;
 
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
-import android.view.Surface;
-
+import android.util.Log;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RCTCamera {
-    public static final int RCT_CAMERA_ASPECT_FILL = 0;
-    public static final int RCT_CAMERA_ASPECT_FIT = 1;
-    public static final int RCT_CAMERA_ASPECT_STRETCH = 2;
-    public static final int RCT_CAMERA_ORIENTATION_AUTO = Integer.MAX_VALUE;
-    public static final int RCT_CAMERA_ORIENTATION_PORTRAIT = Surface.ROTATION_0;
-    public static final int RCT_CAMERA_ORIENTATION_PORTRAIT_UPSIDE_DOWN = Surface.ROTATION_180;
-    public static final int RCT_CAMERA_ORIENTATION_LANDSCAPE_LEFT = Surface.ROTATION_90;
-    public static final int RCT_CAMERA_ORIENTATION_LANDSCAPE_RIGHT = Surface.ROTATION_270;
-    public static final int RCT_CAMERA_TYPE_FRONT = 1;
-    public static final int RCT_CAMERA_TYPE_BACK = 2;
-    public static final int RCT_CAMERA_FLASH_MODE_OFF = 0;
-    public static final int RCT_CAMERA_FLASH_MODE_ON = 1;
-    public static final int RCT_CAMERA_FLASH_MODE_AUTO = 2;
-    public static final int RCT_CAMERA_TORCH_MODE_OFF = 0;
-    public static final int RCT_CAMERA_TORCH_MODE_ON = 1;
-    public static final int RCT_CAMERA_TORCH_MODE_AUTO = 2;
-
-    private static final RCTCamera ourInstance = new RCTCamera();
-    private final HashMap<Integer, CameraInfoWrapper> _cameraInfos;
-    private final HashMap<Integer, Integer> _cameraTypeToIndex;
+    private  PreviewCallback _previewCallback = null;
     private final Map<Number, Camera> _cameras;
-    private int _orientation = -1;
-    private int _actualDeviceOrientation = 0;
+    private Camera _camera;
+    private boolean _isStarting;
+    private boolean _isStopping;
+    private int _width, _height;
+    private long _nativeObject = 0;
 
-    public static RCTCamera getInstance() {
-        return ourInstance;
+    public static native void captureVideoStream(long target, byte[] data, int width, int height);
+
+    public RCTCamera() {
+        _cameras = new HashMap<>();
+        _previewCallback = new PreviewCallback();
+    }
+
+    public void attachNativeObject(long nativeObject) {
+        _nativeObject = nativeObject;
     }
 
     public Camera acquireCameraInstance(int type) {
-        if (null == _cameras.get(type) && null != _cameraTypeToIndex.get(type)) {
+        if (null == _cameras.get(type)) {
             try {
-                Camera camera = Camera.open(_cameraTypeToIndex.get(type));
+                Camera camera = Camera.open(type);
                 _cameras.put(type, camera);
-                adjustPreviewLayout(type);
             } catch (Exception e) {
                 System.console().printf("acquireCameraInstance: %s", e.getLocalizedMessage());
             }
@@ -56,216 +46,142 @@ public class RCTCamera {
         }
     }
 
-    public int getPreviewWidth(int type) {
-        CameraInfoWrapper cameraInfo = _cameraInfos.get(type);
-        if (null == cameraInfo) {
-            return 0;
+    synchronized private void openCamera(int type) {
+        if (!_isStarting) {
+            _isStarting = true;
+            try {
+                _camera = acquireCameraInstance(type);
+                Camera.Parameters parameters = _camera.getParameters();
+                // set autofocus
+                List<String> focusModes = parameters.getSupportedFocusModes();
+                if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                }
+                _camera.setParameters(parameters);
+                _camera.startPreview();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                closeCamera(type);
+            } finally {
+                _isStarting = false;
+            }
         }
-        return cameraInfo.previewWidth;
     }
 
-    public int getPreviewHeight(int type) {
-        CameraInfoWrapper cameraInfo = _cameraInfos.get(type);
-        if (null == cameraInfo) {
-            return 0;
+    synchronized private void closeCamera(int type) {
+        if (!_isStopping) {
+            _isStopping = true;
+            try {
+                if (_camera != null) {
+                    _camera.stopPreview();
+                    releaseCameraInstance(type);
+                    _camera = null;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                _isStopping = false;
+            }
         }
-        return cameraInfo.previewHeight;
     }
 
-    public Camera.Size getBestPreviewSize(int type, int width, int height)
-    {
-        Camera camera = _cameras.get(type);
-        Camera.Size result = null;
-        if(camera == null) {
-            return null;
-        }
-        Camera.Parameters params = camera.getParameters();
-        for (Camera.Size size : params.getSupportedPreviewSizes()) {
-            if (size.width <= width && size.height <= height) {
-                if (result == null) {
-                    result = size;
-                } else {
-                    int resultArea = result.width * result.height;
-                    int newArea = size.width * size.height;
+    private Camera.Size getCaptureQuality(Camera camera, String quality) {
+        Camera.Size previewSize = null;
+        Camera.Parameters parameters = camera.getParameters();
+        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        switch (quality) {
+            case "low":
+                for (Camera.Size size : sizes) {
+                    if (previewSize == null) {
+                        previewSize = size;
+                    } else {
+                        int resultArea = previewSize.width * previewSize.height;
+                        int newArea = size.width * size.height;
 
-                    if (newArea > resultArea) {
-                        result = size;
+                        if (newArea < resultArea) {
+                            previewSize = size;
+                        }
                     }
                 }
+                break;
+            case "medium":
+                previewSize = sizes.get(sizes.size() / 2);
+                break;
+            case "high":
+                int width = Integer.MAX_VALUE, height = Integer.MAX_VALUE;
+                for (Camera.Size size : sizes) {
+                    if (size.width <= width && size.height <= height) {
+                        if (previewSize == null) {
+                            previewSize = size;
+                        } else {
+                            int resultArea = previewSize.width * previewSize.height;
+                            int newArea = size.width * size.height;
+
+                            if (newArea > resultArea) {
+                                previewSize = size;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+        return previewSize;
+    }
+
+    public void startCamera(int fps, boolean useFront, String presetType) {
+        openCamera(useFront ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK);
+        Camera.Size size = getCaptureQuality(_camera, presetType);
+        _width = size.width;
+        _height = size.height;
+        int frameSize = (_width * _height * 3) / 2;
+
+        Camera.Parameters parameter = _camera.getParameters();
+        parameter.setPreviewFpsRange(fps, fps);
+        parameter.setPreviewSize(_width, _height);
+        parameter.setPreviewFormat(PixelFormat.YCbCr_420_SP);
+        _camera.setParameters(parameter);
+
+        _camera.setPreviewCallbackWithBuffer(_previewCallback);
+        _camera.addCallbackBuffer(new byte[frameSize]);
+        _camera.addCallbackBuffer(new byte[frameSize]);
+    }
+
+
+    public void stopCamera() {
+        closeCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
+    }
+
+    private class PreviewCallback implements Camera.PreviewCallback {
+        private long lastCaptureTime = 0;
+        private long inter = 66;
+
+        PreviewCallback() {
+        }
+
+        @Override
+        public void onPreviewFrame(byte[] data, Camera camera) {
+            if (data != null) {
+                if (lastCaptureTime == 0) {
+                    lastCaptureTime = System.currentTimeMillis();
+                } else {
+                    long interval = (System.currentTimeMillis() - lastCaptureTime);
+                    if (System.currentTimeMillis() < lastCaptureTime) {
+                        camera.addCallbackBuffer(data);
+                        return;
+                    } else {
+                        lastCaptureTime += inter;
+                    }
+
+                    if (interval > 4 * inter) {
+                        lastCaptureTime = System.currentTimeMillis();
+                    }
+                }
+                captureVideoStream(_nativeObject, data, _height, _height);
             }
-        }
-        return result;
-    }
-
-    public int getOrientation() {
-        return _orientation;
-    }
-
-    public void setOrientation(int orientation) {
-        if (_orientation == orientation) {
-            return;
-        }
-        _orientation = orientation;
-        adjustPreviewLayout(RCT_CAMERA_TYPE_FRONT);
-        adjustPreviewLayout(RCT_CAMERA_TYPE_BACK);
-    }
-
-    public void setActualDeviceOrientation(int actualDeviceOrientation) {
-        _actualDeviceOrientation = actualDeviceOrientation;
-        adjustPreviewLayout(RCT_CAMERA_TYPE_FRONT);
-        adjustPreviewLayout(RCT_CAMERA_TYPE_BACK);
-    }
-
-    public void setTorchMode(int cameraType, int torchMode) {
-        Camera camera = _cameras.get(cameraType);
-        if (null == camera) {
-            return;
-        }
-
-        Camera.Parameters parameters = camera.getParameters();
-        String value = parameters.getFlashMode();
-        switch (torchMode) {
-            case RCT_CAMERA_TORCH_MODE_ON:
-                value = Camera.Parameters.FLASH_MODE_TORCH;
-                break;
-            case RCT_CAMERA_TORCH_MODE_OFF:
-                value = Camera.Parameters.FLASH_MODE_OFF;
-                break;
-        }
-
-        List<String> flashModes = parameters.getSupportedFlashModes();
-        if (flashModes != null && flashModes.contains(value)) {
-            parameters.setFlashMode(value);
-            camera.setParameters(parameters);
-        }
-    }
-
-    public void setFlashMode(int cameraType, int flashMode) {
-        Camera camera = _cameras.get(cameraType);
-        if (null == camera) {
-            return;
-        }
-
-        Camera.Parameters parameters = camera.getParameters();
-        String value = parameters.getFlashMode();
-        switch (flashMode) {
-            case RCT_CAMERA_FLASH_MODE_AUTO:
-                value = Camera.Parameters.FLASH_MODE_AUTO;
-                break;
-            case RCT_CAMERA_FLASH_MODE_ON:
-                value = Camera.Parameters.FLASH_MODE_ON;
-                break;
-            case RCT_CAMERA_FLASH_MODE_OFF:
-                value = Camera.Parameters.FLASH_MODE_OFF;
-                break;
-        }
-        List<String> flashModes = parameters.getSupportedFlashModes();
-        if (flashModes != null && flashModes.contains(value)) {
-            parameters.setFlashMode(value);
-            camera.setParameters(parameters);
-        }
-    }
-
-    public void adjustCameraRotationToDeviceOrientation(int type, int deviceOrientation)
-    {
-        Camera camera = _cameras.get(type);
-        if (null == camera) {
-            return;
-        }
-
-        CameraInfoWrapper cameraInfo = _cameraInfos.get(type);
-        int rotation;
-        int orientation = cameraInfo.info.orientation;
-        if (cameraInfo.info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            rotation = (orientation + deviceOrientation * 90) % 360;
-        } else {
-            rotation = (orientation - deviceOrientation * 90 + 360) % 360;
-        }
-        cameraInfo.rotation = rotation;
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setRotation(cameraInfo.rotation);
-
-        try {
-            camera.setParameters(parameters);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void adjustPreviewLayout(int type) {
-        Camera camera = _cameras.get(type);
-        if (null == camera) {
-            return;
-        }
-
-        CameraInfoWrapper cameraInfo = _cameraInfos.get(type);
-        int displayRotation;
-        int rotation;
-        int orientation = cameraInfo.info.orientation;
-        if (cameraInfo.info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            rotation = (orientation + _actualDeviceOrientation * 90) % 360;
-            displayRotation = (720 - orientation - _actualDeviceOrientation * 90) % 360;
-        } else {
-            rotation = (orientation - _actualDeviceOrientation * 90 + 360) % 360;
-            displayRotation = rotation;
-        }
-        cameraInfo.rotation = rotation;
-        // TODO: take in account the _orientation prop
-
-        camera.setDisplayOrientation(displayRotation);
-
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setRotation(cameraInfo.rotation);
-
-        // set preview size
-        // defaults to highest resolution available
-        Camera.Size optimalPreviewSize = getBestPreviewSize(type, Integer.MAX_VALUE, Integer.MAX_VALUE);
-        int width = optimalPreviewSize.width;
-        int height = optimalPreviewSize.height;
-
-        parameters.setPreviewSize(width, height);
-        try {
-            camera.setParameters(parameters);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (cameraInfo.rotation == 0 || cameraInfo.rotation == 180) {
-            cameraInfo.previewWidth = width;
-            cameraInfo.previewHeight = height;
-        } else {
-            cameraInfo.previewWidth = height;
-            cameraInfo.previewHeight = width;
-        }
-    }
-
-    private RCTCamera() {
-        _cameras = new HashMap<>();
-        _cameraInfos = new HashMap<>();
-        _cameraTypeToIndex = new HashMap<>();
-
-        // map camera types to camera indexes and collect cameras properties
-        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT && _cameraInfos.get(RCT_CAMERA_TYPE_FRONT) == null) {
-                _cameraInfos.put(RCT_CAMERA_TYPE_FRONT, new CameraInfoWrapper(info));
-                _cameraTypeToIndex.put(RCT_CAMERA_TYPE_FRONT, i);
-            } else if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK && _cameraInfos.get(RCT_CAMERA_TYPE_BACK) == null) {
-                _cameraInfos.put(RCT_CAMERA_TYPE_BACK, new CameraInfoWrapper(info));
-                _cameraTypeToIndex.put(RCT_CAMERA_TYPE_BACK, i);
-            }
-        }
-    }
-
-    private class CameraInfoWrapper {
-        public final Camera.CameraInfo info;
-        public int rotation = 0;
-        public int previewWidth = -1;
-        public int previewHeight = -1;
-
-        public CameraInfoWrapper(Camera.CameraInfo info) {
-            this.info = info;
+            camera.addCallbackBuffer(data);
         }
     }
 }

@@ -62,10 +62,11 @@ class LiveVideoCoreSDK : NSObject<VCSessionDelegate>
 public:
     LIVEVCSessionDelegate* delegate;
     float micGain;//0~1.0
-public:
     VCSimpleSession _livesession;
     std::string _rtmpUrl;
+    void *_jcamera;
 public:
+    LiveVideoCoreSDK(void *jvm);
     void LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate);
 
     void LiveRelease();

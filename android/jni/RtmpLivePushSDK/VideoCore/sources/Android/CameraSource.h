@@ -28,6 +28,7 @@
 #include <iostream>
 #include <videocore/sources/ISource.hpp>
 #include <videocore/transforms/IOutput.hpp>
+#include <glm/glm.hpp>
 
 
 namespace videocore { namespace Android {
@@ -38,8 +39,10 @@ namespace videocore { namespace Android {
     class CameraSource : public ISource, public std::enable_shared_from_this<CameraSource>
     {
     public:
+        
+        
         /*! Constructor */
-        CameraSource();
+        CameraSource(void *jvm, void *jcamera);
         
         /*! Destructor */
         ~CameraSource();
@@ -47,12 +50,33 @@ namespace videocore { namespace Android {
         /*! ISource::setOutput */
         void setOutput(std::shared_ptr<IOutput> output);
         
+        /*!
+         *  Setup camera properties
+         *
+         *  \param fps      Optional parameter to set the output frames per second.
+         *  \param useFront Start with the front-facing camera
+         *  \param sessionPreset name of the preset to use for the capture session
+         */
+        void setupCamera(int fps = 15, bool useFront = true, std::string sessionPreset = "medium");
+        
+        
+        /*!
+         *  Toggle the camera between front and back-facing cameras.
+         */
+        void toggleCamera();
+
     public:
-        void bufferCaptured(void *data, int width, int height);
+        /*! PreviewCallback::onPreviewFrame */
+        void bufferCaptured(uint8_t *data, int width, int height);
         
     private:
         std::weak_ptr<IOutput> m_output;
-        glm::mat4 m_matrix;
+        
+        void *m_jvm;
+        void *m_camera;
+        
+        int  m_fps;
+        bool m_bCameraFontFlag;
     };
     
 }

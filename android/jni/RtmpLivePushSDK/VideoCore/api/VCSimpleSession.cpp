@@ -23,8 +23,8 @@
 
  */
 
-#import <videocore/api/iOS/VCSimpleSession.h>
-#import <videocore/api/iOS/VCPreviewView.h>
+#import <videocore/api/Android/VCSimpleSession.h>
+#import <videocore/api/Android/VCPreviewView.h>
 
 #include <videocore/rtmp/RTMPSession.h>
 #include <videocore/transforms/RTMP/AACPacketizer.h>
@@ -37,11 +37,11 @@
 #include <videocore/transforms/Apple/MP4Multiplexer.h>
 #include <videocore/transforms/Apple/H264Encode.h>
 #include <videocore/sources/Apple/PixelBufferSource.h>
-#include <videocore/sources/iOS/CameraSource.h>
-#include <videocore/sources/iOS/MicSource.h>
-#include <videocore/mixers/iOS/GLESVideoMixer.h>
-#include <videocore/transforms/iOS/AACEncode.h>
-#include <videocore/transforms/iOS/H264Encode.h>
+#include <videocore/sources/Android/CameraSource.h>
+#include <videocore/sources/Android/MicSource.h>
+#include <videocore/mixers/Android/GLESVideoMixer.h>
+#include <videocore/transforms/Android/AACEncode.h>
+#include <videocore/transforms/Android/H264Encode.h>
 #include <videocore/mixers/GenericAudioMixer.h>
 
 #include "LibRtmpSessionMgr.hpp"
@@ -233,6 +233,11 @@ void VCSimpleSession::setUseAdaptiveBitrate(BOOL useAdaptiveBitrate)
 // -----------------------------------------------------------------------------
 //  Public Methods
 // -----------------------------------------------------------------------------
+VCSimpleSession::VCSimpleSession(void *jvm, void *jcamera)
+:_jvm(jvm), _jcamera(jcamera)
+{
+}
+
 void VCSimpleSession::initWithVideoSize(int width, int height, int fps, int bps, BOOL useInterfaceOrientation,
                         VCCameraState cameraState, VCAspectMode aspectMode)
 {
@@ -439,7 +444,7 @@ void setupGraph()
     }
     {
         // Add video mixer
-        m_videoMixer = std::make_shared<videocore::iOS::GLESVideoMixer>(videoSize.width,
+        m_videoMixer = std::make_shared<videocore::Android::GLESVideoMixer>(videoSize.width,
                                                                         videoSize.height,
                                                                         frameDuration);
 
@@ -468,8 +473,8 @@ void setupGraph()
     // Create sources
     {
         // Add camera source
-        m_cameraSource = std::make_shared<videocore::iOS::CameraSource>();
-        m_cameraSource->setOrientationLocked(orientationLocked);
+        m_cameraSource = std::make_shared<videocore::Android::CameraSource>(_jvm, _jcamera);
+        m_cameraSource->setOrientationLocked(_orientationLocked);
         auto aspectTransform = std::make_shared<videocore::AspectTransform>(_videoSize.width, _videoSize.height,m_aspectMode);
 
         auto positionTransform = std::make_shared<videocore::PositionTransform>(_videoSize.width/2, _videoSize.height/2,
@@ -478,7 +483,7 @@ void setupGraph()
                                                                                 );
 
 
-        std::dynamic_pointer_cast<videocore::iOS::CameraSource>(m_cameraSource)->setupCamera(fps,(cameraState == VCCameraStateFront),useInterfaceOrientation, NULL,^{
+        std::dynamic_pointer_cast<videocore::Android::CameraSource>(m_cameraSource)->setupCamera(fps, (cameraState == VCCameraStateFront),useInterfaceOrientation, NULL,^{
             m_cameraSource->setContinuousAutofocus(true);
             m_cameraSource->setContinuousExposure(true);
 
@@ -499,7 +504,7 @@ void setupGraph()
     }
     {
         // Add mic source
-        m_micSource = std::make_shared<videocore::iOS::MicSource>(audioSampleRate, audioChannelCount);
+        m_micSource = std::make_shared<videocore::Android::MicSource>(audioSampleRate, audioChannelCount);
         m_micSource->setOutput(m_audioMixer);
 
         const auto epoch = std::chrono::steady_clock::now();
@@ -518,9 +523,9 @@ void addEncodersAndPacketizers()
     {
         // Add encoders
 
-        m_aacEncoder = std::make_shared<videocore::iOS::AACEncode>(audioSampleRate, audioChannelCount, 96000);
+        m_aacEncoder = std::make_shared<videocore::Android::AACEncode>(audioSampleRate, audioChannelCount, 96000);
         if(SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
-            // If >= iOS 8.0 use the VideoToolbox encoder that does not write to disk.
+            // If >= Android 8.0 use the VideoToolbox encoder that does not write to disk.
             m_h264Encoder = std::make_shared<videocore::Apple::H264Encode>(videoSize.width,
                                                                            videoSize.height,
                                                                            fps,
@@ -528,7 +533,7 @@ void addEncodersAndPacketizers()
                                                                            false,
                                                                            ctsOffset);
         } else {
-            m_h264Encoder =std::make_shared<videocore::iOS::H264Encode>(videoSize.width,
+            m_h264Encoder =std::make_shared<videocore::Android::H264Encode>(videoSize.width,
                                                                         videoSize.height,
                                                                         fps,
                                                                         bitrate);

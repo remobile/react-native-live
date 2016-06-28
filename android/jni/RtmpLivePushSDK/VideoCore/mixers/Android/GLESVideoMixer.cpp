@@ -105,7 +105,7 @@ namespace videocore { namespace iOS {
     // -------------------------------------------------------------------------
     
     void
-    SourceBuffer::setBuffer(Apple::PixelBufferRef ref, CVOpenGLESTextureCacheRef textureCache, JobQueue& m_glJobQueue, void* m_glesCtx)
+    SourceBuffer::setBuffer(Android::PixelBufferRef ref, CVOpenGLESTextureCacheRef textureCache, JobQueue& m_glJobQueue, void* m_glesCtx)
     {
         
         bool flush = false;
@@ -438,7 +438,7 @@ namespace videocore { namespace iOS {
         const auto h = hash(source);
         
         
-        auto inPixelBuffer = *(Apple::PixelBufferRef*)data ;
+        auto inPixelBuffer = *(Android::PixelBufferRef*)data ;
 
         m_sourceBuffers[h].setBuffer(inPixelBuffer, this->m_textureCache, m_glJobQueue, m_glesCtx);
         m_sourceBuffers[h].setBlends(md.getData<kVideoMetadataBlends>());

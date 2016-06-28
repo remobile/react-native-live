@@ -28,13 +28,13 @@
 
 namespace videocore { namespace Android {
  
-    PixelBuffer::PixelBuffer(void *data, int width, int height, bool temporary)
+    PixelBuffer::PixelBuffer(void *data, int width, int height)
     : m_state(kVCPixelBufferStateAvailable),
     m_locked(false),
     m_data(data),
     m_width(width),
     m_height(height),
-    m_temporary(temporary)
+    m_temporary(false)
     {
         m_pixelFormat = kCVPixelBufferFormat420v;
     }

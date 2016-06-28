@@ -56,6 +56,9 @@ public:
 };
 
 class VCSimpleSession {
+public: //for android
+    void *_jvm;
+    void *_jcamera;
 public:
     CGPoint       focusPointOfInterest;   // (0,0) is top-left, (1,1) is bottom-right
     CGPoint       exposurePointOfInterest;
@@ -135,6 +138,7 @@ public:
     void setExposurePointOfInterest(CGPoint exposurePointOfInterest);
     void setUseAdaptiveBitrate(BOOL useAdaptiveBitrate);
 public:
+    VCSimpleSession(void *jvm, void *jcamera);
     void setupGraph();
     void initWithVideoSize:(CGSize videoSize, int fps, int bps, BOOL useInterfaceOrientation, VCCameraState cameraState, VCAspectMode aspectMode);
     void startRtmpSessionWithURL(std::string rtmpUrl);

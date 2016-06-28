@@ -65,7 +65,6 @@ namespace videocore { namespace Android {
         PixelBufferState m_state;
         
         bool m_locked;
-        bool m_temporary;
     };
     
     typedef std::shared_ptr<PixelBuffer> PixelBufferRef;

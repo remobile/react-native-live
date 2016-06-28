@@ -8,12 +8,6 @@
 
 #include "LiveVideoCoreSDK.h"
 
-extern "C"
-{
-    JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv * env, jobject object);
-    JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv * env, jobject object);
-}
-
 static LiveVideoCoreSDK *liveVideoCoreSDK = NULL;
 
 std::string jstring2str(JNIEnv* env, jstring jstr)
@@ -36,7 +30,8 @@ std::string jstring2str(JNIEnv* env, jstring jstr)
     return stemp;
 }
 
-JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *env, jobject object, jstring jRtmpUrl, jobject jPreviewView, jint jWidth, jint jHeight, jint jBitRate, jint jFrameRate) {
+extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
+Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *env, jobject object, jobject jcamera, jstring jRtmpUrl, jobject jPreviewView, jint jWidth, jint jHeight, jint jBitRate, jint jFrameRate) {
     if (NULL == liveVideoCoreSDK) {
         JavaVM* jvm = NULL;
         env->GetJavaVM(&jvm);
@@ -47,17 +42,36 @@ JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *
         LIVE_BITRATE iBitRate = (LIVE_BITRATE)jBitRate;
         LIVE_FRAMERATE iFrameRate = (LIVE_FRAMERATE)jFrameRate;
         
-        liveVideoCoreSDK = new liveVideoCoreSDK(jvm, object);
+        _jcamera = env->NewGlobalRef(jcamera);
+        liveVideoCoreSDK = new liveVideoCoreSDK(jvm, _jcamera);
         liveVideoCoreSDK->LiveInit(rtmpUrl, previewView, videSize, (LIVE_BITRATE)iBitRate, (LIVE_FRAMERATE)iFrameRate);
     }
 }
 
-JNIEXPORT void JNICALL Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv *env, jobject object) {
+extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
+Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv *env, jobject object) {
     if (NULL != liveVideoCoreSDK) {
         liveVideoCoreSDK->LiveRelease();
         delete liveVideoCoreSDK;
         liveVideoCoreSDK = NULL;
+        env->DeleteGlobalRef(_jcamera);
+        _jcamera = NULL;
     }
+}
+
+extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
+Java_com_remobile_live_RCTCamera_captureVideoStream(JNIEnv* env, jobject object, jlong target, jbyteArray jdata, jint width, jint height)
+{
+    CameraSource *dev = reinterpret_cast<CameraSource *>(target);
+    uint8_t *data = (uint8_t *)env->GetByteArrayElements(jdata, 0);
+    dev->bufferCaptured(data, width, height);
+    env->ReleaseByteArrayElements(jdata, (jbyte *)data, JNI_ABORT);
+}
+
+
+LiveVideoCoreSDK::LiveVideoCoreSDK(void *jvm, void *jcamera)
+:_livesession(jvm, jcamera)
+{
 }
 
 void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate)
