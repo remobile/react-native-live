@@ -19199,18 +19199,8 @@
 				ALTERNATE_OWNER = Alex.shi;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
-					./Headers/Private/VideoCore,
-					"./Headers/Public/UriParser-cpp",
-					./Headers/Private,
-					./Headers/Public/VideoCore,
-					./Headers/Public,
-					./Headers/Public/glm,
-					./Headers/Public/glm/gtx,
-					./Headers/Public/glm/gtc,
-					./Headers/Public/boost,
-					./Headers/Public/glm/virtrev,
-					./Headers/Public/glm/core,
-					./boost/boost,
+					.,
+					./glm,
 					./boost,
 				);
 				INSTALL_OWNER = Alex.shi;
@@ -19231,18 +19221,8 @@
 				ALTERNATE_OWNER = Alex.shi;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
-					./Headers/Private/VideoCore,
-					"./Headers/Public/UriParser-cpp",
-					./Headers/Private,
-					./Headers/Public/VideoCore,
-					./Headers/Public,
-					./Headers/Public/glm,
-					./Headers/Public/glm/gtx,
-					./Headers/Public/glm/gtc,
-					./Headers/Public/boost,
-					./Headers/Public/glm/virtrev,
-					./Headers/Public/glm/core,
-					./boost/boost,
+					.,
+					./glm,
 					./boost,
 				);
 				INSTALL_OWNER = Alex.shi;
