@@ -2,7 +2,7 @@
     "name": "@remobile/react-native-live",
         "version": "1.0.1",
         "description": "A marquee label for react-native",
-        "main": "index.js",
+        "main": "index.ios.js",
         "author": {
             "name": "YunJiang.Fang",
             "email": "42550564@qq.com"

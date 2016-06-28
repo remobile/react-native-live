@@ -20,7 +20,7 @@
 {
     if ((self = [super init])) {
         self.bridge = bridge;
-        self.videoSize = 0;
+        self.videoSize = 1;
         self.horizontal = NO;
         self.bitRate = LIVE_BITRATE_500Kbps;
         self.frameRate = LIVE_FRAMERATE_20;
@@ -67,13 +67,8 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-}
-
-- (void)didMoveToSuperview {
-    [super didMoveToSuperview];
     [self start];
 }
-
 - (void)insertReactSubview:(UIView *)view atIndex:(NSInteger)atIndex
 {
     [self insertSubview:view atIndex:atIndex + 1];
