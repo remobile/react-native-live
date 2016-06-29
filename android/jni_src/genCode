@@ -3,6 +3,7 @@
 rm -fr ../jni
 mkdir ../jni
 cp ./LiveVideoCoreSDK.* ../jni/
+cp ./*.mk ../jni/
 mkdir ../jni/RtmpLivePushSDK
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/boost ../jni/RtmpLivePushSDK/boost
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/glm ../jni/RtmpLivePushSDK/glm
