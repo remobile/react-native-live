@@ -3,16 +3,21 @@
 rm -fr ../jni
 mkdir ../jni
 cp ./LiveVideoCoreSDK.* ../jni/
+cp ./JNIHelper.* ../jni/
 cp ./*.mk ../jni/
 mkdir ../jni/RtmpLivePushSDK
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/boost ../jni/RtmpLivePushSDK/boost
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/glm ../jni/RtmpLivePushSDK/glm
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/UriParser-cpp ../jni/RtmpLivePushSDK/UriParser-cpp
 cp -r ../../ios/RCTLive/RtmpLivePushSDK/VideoCore ../jni/RtmpLivePushSDK/VideoCore
-cp -r ./RtmpLivePushSDK/VideoCore/api/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/api/Android
-cp -r ./RtmpLivePushSDK/VideoCore/mixers/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/mixers/Android
-cp -r ./RtmpLivePushSDK/VideoCore/sources/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/sources/Android
-cp -r ./RtmpLivePushSDK/VideoCore/stream/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/stream/Android
-cp -r ./RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android
-cp -r ./RtmpLivePushSDK/VideoCore/transforms/Android ../../ios/RCTLive/RtmpLivePushSDK/VideoCore/transforms/Android
+cp -r ./RtmpLivePushSDK/VideoCore/api/Android ../jni/RtmpLivePushSDK/VideoCore/api/Android
+cp -r ./RtmpLivePushSDK/VideoCore/mixers/Android ../jni/RtmpLivePushSDK/VideoCore/mixers/Android
+cp -r ./RtmpLivePushSDK/VideoCore/sources/Android ../jni/RtmpLivePushSDK/VideoCore/sources/Android
+cp -r ./RtmpLivePushSDK/VideoCore/stream/Android ../jni/RtmpLivePushSDK/VideoCore/stream/Android
+cp -r ./RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android ../jni/RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android
+cp -r ./RtmpLivePushSDK/VideoCore/transforms/Android ../jni/RtmpLivePushSDK/VideoCore/transforms/Android
+cd ../jni
+find -name Apple -exec rm -fr {} \; 2>/dev/null
+find -name iOS -exec rm -fr {} \; 2>/dev/null
+find -name GenericAudioMixer.* -exec rm -f {} \; 2>/dev/null
 

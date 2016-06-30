@@ -24,13 +24,15 @@
         self.horizontal = NO;
         self.bitRate = LIVE_BITRATE_500Kbps;
         self.frameRate = LIVE_FRAMERATE_20;
-        self.url = @"rtmp://192.168.1.129:5920/rtmplive/test";
+        self.cameraState = VCCameraStateFront;
+        self.aspectMode = VCAspectModeFit;
+        self.rtmpUrl = @"rtmp://192.168.1.129:5920/rtmplive/test";
         sdk = [LiveVideoCoreSDK sharedinstance];
     }
     return self;
 }
 
-- (void) LiveConnectionStatusChanged: (LIVE_VCSessionState) sessionState {
+- (void)connectionStatusChanged:(VCSessionState)sessionState {
 }
 
 - (CGSize) getVideoSize {
@@ -56,7 +58,15 @@
 }
 
 - (void)start {
-    [sdk LiveInit:self.url Preview:self VideSize:[self getVideoSize] BitRate:self.bitRate FrameRate:self.frameRate Delegate:self];
+    [sdk LiveInit:self.rtmpUrl
+           Preview:self
+          VideSize:[self getVideoSize]
+           BitRate:self.bitRate
+         FrameRate:self.frameRate
+      CameraState:self.cameraState
+        AspectMode:self.aspectMode
+          Delegate:self];
+
     sdk.micGain = 5;
 }
 

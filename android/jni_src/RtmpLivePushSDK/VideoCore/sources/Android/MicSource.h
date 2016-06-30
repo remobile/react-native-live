@@ -29,10 +29,6 @@
 #include <videocore/sources/ISource.hpp>
 #include <videocore/transforms/IOutput.hpp>
 
-#import <Foundation/Foundation.h>
-
-@class InterruptionHandler;
-
 namespace videocore { namespace Android {
 
     /*!

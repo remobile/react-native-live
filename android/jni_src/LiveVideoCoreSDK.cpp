@@ -7,44 +7,27 @@
 //
 
 #include "LiveVideoCoreSDK.h"
+#include "JNIHelper.h"
 
 static LiveVideoCoreSDK *liveVideoCoreSDK = NULL;
 
-std::string jstring2str(JNIEnv* env, jstring jstr)
-{
-    char* rtn = NULL;
-    jclass clsstring = env->FindClass("java/lang/String");
-    jstring strencode = env->NewStringUTF("utf-8");
-    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
-    jbyteArray barr =  (jbyteArray)env->CallObjectMethod(jstr,mid,strencode);
-    jsize alen = env->GetArrayLength(barr);
-    jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
-    if(alen >  0) {
-        rtn = (char *)malloc(alen+1);
-        memcpy(rtn,ba,alen);
-        rtn[alen]=0;
-    }
-    env->ReleaseByteArrayElements(barr,ba,0);
-    std::string stemp(rtn);
-    free(rtn);
-    return stemp;
-}
 
 extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
-Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *env, jobject object, jobject jcamera, jstring jRtmpUrl, jobject jPreviewView, jint jWidth, jint jHeight, jint jBitRate, jint jFrameRate) {
+Java_com_remobile_live_LiveVideoCoreSDK_LiveInit(JNIEnv *env, jobject object, jobject jcamera, jstring jRtmpUrl, jobject jPreviewView, jint jWidth, jint jHeight, jint jBitRate, jint jFrameRate, jint jCameraState, jint jAspectMode) {
     if (NULL == liveVideoCoreSDK) {
         JavaVM* jvm = NULL;
         env->GetJavaVM(&jvm);
         
-        std::string rtmpUrl = jstring2str(env, jRtmpUrl);
+        std::string rtmpUrl = jstr2str(env, jRtmpUrl);
         void* previewView = (void *)jPreviewView;
-        CGSize videSize = {width: jWidth, height: jHeight};
+        CGSize videSize = {width: (float)jWidth, height: (float)jHeight};
         LIVE_BITRATE iBitRate = (LIVE_BITRATE)jBitRate;
         LIVE_FRAMERATE iFrameRate = (LIVE_FRAMERATE)jFrameRate;
-        
-        _jcamera = env->NewGlobalRef(jcamera);
-        liveVideoCoreSDK = new liveVideoCoreSDK(jvm, _jcamera);
-        liveVideoCoreSDK->LiveInit(rtmpUrl, previewView, videSize, (LIVE_BITRATE)iBitRate, (LIVE_FRAMERATE)iFrameRate);
+        VCCameraState cameraState = (VCCameraState)jCameraState;
+        VCAspectMode aspectMode = (VCAspectMode)jAspectMode;
+
+        liveVideoCoreSDK = new LiveVideoCoreSDK(jvm, env->NewGlobalRef(jcamera));
+        liveVideoCoreSDK->LiveInit(rtmpUrl, previewView, videSize, iBitRate, iFrameRate, cameraState, aspectMode);
     }
 }
 
@@ -52,17 +35,16 @@ extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
 Java_com_remobile_live_LiveVideoCoreSDK_LiveRelease(JNIEnv *env, jobject object) {
     if (NULL != liveVideoCoreSDK) {
         liveVideoCoreSDK->LiveRelease();
+        env->DeleteGlobalRef((jobject)liveVideoCoreSDK->_jcamera);
         delete liveVideoCoreSDK;
         liveVideoCoreSDK = NULL;
-        env->DeleteGlobalRef(_jcamera);
-        _jcamera = NULL;
     }
 }
 
 extern "C" JNIEXPORT void JNICALL __attribute__((visibility("default")))
 Java_com_remobile_live_RCTCamera_captureVideoStream(JNIEnv* env, jobject object, jlong target, jbyteArray jdata, jint width, jint height)
 {
-    CameraSource *dev = reinterpret_cast<CameraSource *>(target);
+    videocore::Android::CameraSource *dev = reinterpret_cast<videocore::Android::CameraSource *>(target);
     uint8_t *data = (uint8_t *)env->GetByteArrayElements(jdata, 0);
     dev->bufferCaptured(data, width, height);
     env->ReleaseByteArrayElements(jdata, (jbyte *)data, JNI_ABORT);
@@ -70,13 +52,13 @@ Java_com_remobile_live_RCTCamera_captureVideoStream(JNIEnv* env, jobject object,
 
 
 LiveVideoCoreSDK::LiveVideoCoreSDK(void *jvm, void *jcamera)
-:_livesession(jvm, jcamera)
+:_jcamera(jcamera), _livesession(jvm, jcamera)
 {
 }
 
-void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate)
+void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate, VCCameraState cameraState, VCAspectMode aspectMode)
 {
-    _livesession.initWithVideoSize:videSize frameRate:iFrameRate bitrate:iBitRate useInterfaceOrientation:YES];
+    _livesession.initWithVideoSize(videSize, iFrameRate, iBitRate, true, cameraState, aspectMode);
     _livesession.delegate = this;
     _rtmpUrl = rtmpUrl;
     
@@ -88,66 +70,36 @@ void LiveVideoCoreSDK::LiveInit(std::string rtmpUrl, void* previewView, CGSize v
           rtmpUrl.c_str(), videSize.width, videSize.height, (unsigned long)iBitRate, (unsigned long)iFrameRate);
 }
 
-- (void)LiveRelease{
+void LiveVideoCoreSDK::LiveRelease()
+{
     _livesession.endRtmpSession();
-    _livesession.release();
     DLog("LiveRelease: %s", _rtmpUrl.c_str());
 }
 
-- (void)setFilter:(LIVE_FILTER_TYPE) type
+void LiveVideoCoreSDK::setFilter(VCFilter type)
 {
-    switch (type) {
-        case LIVE_FILTER_ORIGINAL:
-            [_livesession setFilter:VCFilterNormal];
-            break;
-        case LIVE_FILTER_BEAUTY:
-            [_livesession setFilter:VCFilterBeauty];
-            break;
-        case LIVE_FILTER_ANTIQUE:
-            [_livesession setFilter:VCFilterSepia];
-            break;
-        case LIVE_FILTER_BLACK:
-            [_livesession setFilter:VCFilterGray];
-            break;
-        default:
-            break;
-    }
+    _livesession.setFilter(type);
 }
 
--(void) setMicGain:(float)micGain
-{
-    _livesession.micGain = micGain;
-}
-
--(float) micGain
-{
-    return _livesession.micGain;
-}
-
-- (void)focuxAtPoint:(CGPoint)point
+void LiveVideoCoreSDK::focuxAtPoint(CGPoint point)
 {
     _livesession.focusPointOfInterest = point;
     _livesession.exposurePointOfInterest = point;
 }
 
-//delegate operation
-- (void) connectionStatusChanged: (VCSessionState) sessionState
+void LiveVideoCoreSDK::connectionStatusChanged(VCSessionState sessionState)
 {
     DLog("rtmp live state: %i", sessionState);
-    LIVE_VCSessionState state = (LIVE_VCSessionState)sessionState;
-    
-    [self.delegate LiveConnectionStatusChanged:state];
-    
-    return;
 }
 
-- (void)setCameraFront:(Boolean)bCameraFrontFlag
+void LiveVideoCoreSDK::didAddCameraSource(VCSimpleSession *session) {
+}
+
+void LiveVideoCoreSDK::detectedThroughput(int throughputInBytesPerSecond, int videoRate) {
+}
+
+void LiveVideoCoreSDK::setCameraFront(bool bCameraFrontFlag)
 {
-    if (!bCameraFrontFlag) {
-        _livesession.cameraState = VCCameraStateBack;
-    } else {
-        _livesession.cameraState = VCCameraStateFront;
-    }
+    _livesession.setCameraState(bCameraFrontFlag?VCCameraStateFront:VCCameraStateBack);
 }
 
-@end

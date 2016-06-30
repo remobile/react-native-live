@@ -28,55 +28,7 @@
 #include <videocore/system/pixelBuffer/Apple/PixelBuffer.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <jni.h>
-
-#define ATTACH_JVM(name, sign)  \
-    bool isAttached = false; \
-    JNIEnv *_env = NULL; \
-    JavaVM *android_jvm = (JavaVM *)m_jvm; \
-    jobject _camera = (jobject)m_camera; \
-    jmethodID jmethod; \
-    jclass _class; \
-    do { \
-        if (android_jvm->GetEnv((void **)&_env, JNI_VERSION_1_6) != JNI_OK) { \
-            jint res = android_jvm->AttachCurrentThread(&_env,NULL); \
-            ASSERT_ERROR(!((res<0)||!_env), "Could not attach thread to JVM"); \
-            isAttached = true; \
-        } \
-        _class = _env->GetObjectClass(_camera); \
-        ASSERT_ERROR(_class!=NULL, "GetObjectClass"); \
-        _method = _env->GetMethodID(_class, name, sign); \
-        ASSERT_ERROR(NULL!=_method, "GetMethodID "##name); \
-    } while (0)
-
-#define DETACH_JVM() \
-    do { \
-        if (isAttached) { \
-            android_jvm->DetachCurrentThread(); \
-        } \
-    } while (0)
-
-
-#define ASSERT_ERROR(trial, info) do {\
-    if (!(trial)) { \
-        LOGF("%s  <failed>", info); \
-        goto on_error; \
-    } else { \
-        LOGV("%s  <success>", info); \
-    } \
-} while (0)
-
-
-jstring string2jstring(JNIEnv* env, const std::string &str)
-{
-    jclass strClass = env->FindClass("Ljava/lang/String;");
-    jmethodID ctorID = env->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
-    int len = str.length();
-    jbyteArray bytes = env->NewByteArray(len);
-    env->SetByteArrayRegion(bytes, 0, len, (jbyte*)str.c_str());
-    jstring encoding = env->NewStringUTF("utf-8");
-    return (jstring)env->NewObject(strClass, ctorID, bytes, encoding);
-}
+#include "JNIHelper.h"
 
 namespace videocore { namespace Android {
 

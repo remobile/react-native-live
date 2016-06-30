@@ -380,62 +380,6 @@ namespace videocore { namespace simpleApi {
 - (int) estimatedThroughput {
     return _estimatedThroughput;
 }
-// -----------------------------------------------------------------------------
-//  Public Methods
-// -----------------------------------------------------------------------------
-#pragma mark - Public Methods
-// -----------------------------------------------------------------------------
-
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps
-{
-    if((self = [super init])) {
-        [self initInternalWithVideoSize:videoSize
-                              frameRate:fps
-                                bitrate:bps
-                useInterfaceOrientation:NO
-                            cameraState:VCCameraStateBack
-                             aspectMode:VCAspectModeFit];
-
-    }
-    return self;
-}
-
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps
-           useInterfaceOrientation:(BOOL)useInterfaceOrientation
-{
-    if (( self = [super init] ))
-    {
-        [self initInternalWithVideoSize:videoSize
-                              frameRate:fps
-                                bitrate:bps
-                useInterfaceOrientation:useInterfaceOrientation
-                            cameraState:VCCameraStateBack
-                             aspectMode:VCAspectModeFit];
-    }
-    return self;
-}
-
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps
-           useInterfaceOrientation:(BOOL)useInterfaceOrientation
-                       cameraState:(VCCameraState) cameraState
-{
-    if (( self = [super init] ))
-    {
-        [self initInternalWithVideoSize:videoSize
-                              frameRate:fps
-                                bitrate:bps
-                useInterfaceOrientation:useInterfaceOrientation
-                            cameraState:cameraState
-                             aspectMode:VCAspectModeFit];
-    }
-    return self;
-}
 
 - (instancetype) initWithVideoSize:(CGSize)videoSize
                          frameRate:(int)fps
@@ -576,10 +520,6 @@ namespace videocore { namespace simpleApi {
                                               auto video = std::dynamic_pointer_cast<videocore::IEncoder>( bSelf->m_h264Encoder );
                                               auto audio = std::dynamic_pointer_cast<videocore::IEncoder>( bSelf->m_aacEncoder );
                                               if(video && audio && bSelf.useAdaptiveBitrate) {
-
-                                                  if ([bSelf.delegate respondsToSelector:@selector(detectedThroughput:)]) {
-                                                      [bSelf.delegate detectedThroughput:predicted];
-                                                  }
                                                   if ([bSelf.delegate respondsToSelector:@selector(detectedThroughput:videoRate:)]) {
                                                       [bSelf.delegate detectedThroughput:predicted videoRate:video->bitrate()];
                                                   }

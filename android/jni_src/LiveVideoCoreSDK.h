@@ -1,13 +1,7 @@
-//
-//  LiveVideoCoreSDK.h
-//  LiveVideoCoreSDK
-//
-//  Created by Alex.Shi on 16/3/2.
-//  Copyright © 2016年 com.Alex. All rights reserved.
-//
+#ifndef __LIVE_VIDEO_CORE_SDK_H__
+#define __LIVE_VIDEO_CORE_SDK_H__
 
-
-#import "../../RtmpLivePushSDK/VideoCore/api/Android/VCSimpleSession.h"
+#include "./RtmpLivePushSDK/VideoCore/api/Android/VCSimpleSession.h"
 
 #define LIVE_VIDEO_DEF_WIDTH  360
 #define LIVE_VIDEO_DEF_HEIGHT 640
@@ -22,63 +16,43 @@
 #define LIVE_VIEDO_SIZE_D1   (CGSizeMake(540, 960))
 #define LIVE_VIEDO_SIZE_720P (CGSizeMake(720, 1280))
 
-typedef NS_ENUM(NSUInteger, LIVE_BITRATE) {
+typedef enum {
     LIVE_BITRATE_1Mbps=1500000,
     LIVE_BITRATE_800Kbps=800000,
     LIVE_BITRATE_500Kbps=500000
-};
+}LIVE_BITRATE;
 
-typedef NS_ENUM(NSUInteger, LIVE_FRAMERATE) {
+typedef enum {
     LIVE_FRAMERATE_30=30,
     LIVE_FRAMERATE_25=25,
     LIVE_FRAMERATE_20=20,
     LIVE_FRAMERATE_15=15
-};
+}LIVE_FRAMERATE;
 
-typedef NS_ENUM(NSInteger, LIVE_VCSessionState)
-{
-    LIVE_VCSessionStateNone,
-    LIVE_VCSessionStatePreviewStarted,
-    LIVE_VCSessionStateStarting,
-    LIVE_VCSessionStateStarted,
-    LIVE_VCSessionStateEnded,
-    LIVE_VCSessionStateError
-};
-
-typedef NS_ENUM(NSUInteger, LIVE_FILTER_TYPE) {
-    LIVE_FILTER_ORIGINAL,
-    LIVE_FILTER_BEAUTY,
-    LIVE_FILTER_ANTIQUE,
-    LIVE_FILTER_BLACK
-};
-
-class LIVEVCSessionDelegate
-{
-    virtual void LiveConnectionStatusChanged(LIVE_VCSessionState sessionState) = 0;
-};
-
-class LiveVideoCoreSDK : NSObject<VCSessionDelegate>
+class LiveVideoCoreSDK : VCSessionDelegate
 {
 public:
-    LIVEVCSessionDelegate* delegate;
     float micGain;//0~1.0
     VCSimpleSession _livesession;
     std::string _rtmpUrl;
     void *_jcamera;
 public:
-    LiveVideoCoreSDK(void *jvm);
-    void LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate);
-
+    LiveVideoCoreSDK(void *jvm, void *jcamera);
+    void LiveInit(std::string rtmpUrl, void* previewView, CGSize videSize, LIVE_BITRATE iBitRate, LIVE_FRAMERATE iFrameRate, VCCameraState cameraState, VCAspectMode aspectMode);
     void LiveRelease();
 
     void connect();
     void disconnect();
 
-    void setCameraFront(Boolean bCameraFrontFlag);
-    void setFilter(LIVE_FILTER_TYPE type);
+    void setCameraFront(bool bCameraFrontFlag);
+    void setFilter(VCFilter type);
 
     void focuxAtPoint(CGPoint point);
+    
     //VCSessionDelegate protocal
     void connectionStatusChanged(VCSessionState sessionState);
+    void didAddCameraSource(VCSimpleSession *session);
+    void detectedThroughput(int throughputInBytesPerSecond, int videoRate);
     
 };
+#endif //__LIVE_VIDEO_CORE_SDK_H__

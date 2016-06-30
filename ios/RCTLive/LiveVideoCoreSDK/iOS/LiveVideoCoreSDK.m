@@ -28,11 +28,19 @@
 }
 
 
-- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate Delegate:(id<LIVEVCSessionDelegate>)delegate{
+- (void)LiveInit:(NSString*)rtmpUrl
+         Preview:(UIView*)previewView
+        VideSize:(CGSize)videSize
+         BitRate:(LIVE_BITRATE)iBitRate
+       FrameRate:(LIVE_FRAMERATE)iFrameRate
+     CameraState:(VCCameraState) cameraState
+      AspectMode:(VCAspectMode)aspectMode
+        Delegate:(id<VCSessionDelegate>)delegate
+{
     if (self) {
-        _livesession = [[VCSimpleSession alloc] initWithVideoSize:videSize frameRate:iFrameRate bitrate:iBitRate useInterfaceOrientation:YES];
+        _livesession = [[VCSimpleSession alloc] initWithVideoSize:videSize frameRate:iFrameRate bitrate:iBitRate useInterfaceOrientation:YES cameraState:cameraState aspectMode:aspectMode];
         
-        _livesession.delegate = self;
+        _livesession.delegate = delegate;
         
         _rtmpUrl = rtmpUrl;
         
@@ -55,23 +63,8 @@
     NSLog(@"LiveRelease: %@", _rtmpUrl);
 }
 
-- (void)setFilter:(LIVE_FILTER_TYPE) type{
-    switch (type) {
-        case LIVE_FILTER_ORIGINAL:
-            [_livesession setFilter:VCFilterNormal];
-            break;
-        case LIVE_FILTER_BEAUTY:
-            [_livesession setFilter:VCFilterBeauty];
-            break;
-        case LIVE_FILTER_ANTIQUE:
-            [_livesession setFilter:VCFilterSepia];
-            break;
-        case LIVE_FILTER_BLACK:
-            [_livesession setFilter:VCFilterGray];
-            break;
-        default:
-            break;
-    }
+- (void)setFilter:(VCFilter) type{
+    [_livesession setFilter:type];
 }
 
 -(void) setMicGain:(float)micGain{
@@ -86,16 +79,6 @@
 {
     _livesession.focusPointOfInterest = point;
     _livesession.exposurePointOfInterest = point;
-}
-
-//delegate operation
-- (void) connectionStatusChanged: (VCSessionState) sessionState{
-    NSLog(@"rtmp live state: %i", (int)sessionState);
-    LIVE_VCSessionState state = (LIVE_VCSessionState)sessionState;
-    
-    [self.delegate LiveConnectionStatusChanged:state];
-    
-    return;
 }
 
 - (void)setCameraFront:(Boolean)bCameraFrontFlag {

@@ -74,8 +74,6 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 - (void) connectionStatusChanged: (VCSessionState) sessionState;
 @optional
 - (void) didAddCameraSource:(VCSimpleSession*)session;
-
-- (void) detectedThroughput: (NSInteger) throughputInBytesPerSecond; //Depreciated, should use method below
 - (void) detectedThroughput: (NSInteger) throughputInBytesPerSecond videoRate:(NSInteger) rate;
 @end
 
@@ -108,33 +106,12 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 
 @property (nonatomic, assign) id<VCSessionDelegate> delegate;
 
-// -----------------------------------------------------------------------------
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps;
-
-// -----------------------------------------------------------------------------
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps
-           useInterfaceOrientation:(BOOL)useInterfaceOrientation;
-
-// -----------------------------------------------------------------------------
-- (instancetype) initWithVideoSize:(CGSize)videoSize
-                         frameRate:(int)fps
-                           bitrate:(int)bps
-           useInterfaceOrientation:(BOOL)useInterfaceOrientation
-                       cameraState:(VCCameraState) cameraState;
-
-// -----------------------------------------------------------------------------
 - (instancetype) initWithVideoSize:(CGSize)videoSize
                          frameRate:(int)fps
                            bitrate:(int)bps
            useInterfaceOrientation:(BOOL)useInterfaceOrientation
                        cameraState:(VCCameraState) cameraState
                         aspectMode:(VCAspectMode) aspectMode;
-
-// -----------------------------------------------------------------------------
 
 - (void) startRtmpSessionWithURL:(NSString*)rtmpUrl;
 

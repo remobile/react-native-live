@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cp ../jni/LiveVideoCoreSDK.* ./
+cp ../jni/JNIHelper.* ./
+cp ../jni/*.mk ./
+cp ../jni/RtmpLivePushSDK/VideoCore/api/Android/* ./RtmpLivePushSDK/VideoCore/api/Android
+cp ../jni/RtmpLivePushSDK/VideoCore/mixers/Android/* ./RtmpLivePushSDK/VideoCore/mixers/Android
+cp ../jni/RtmpLivePushSDK/VideoCore/sources/Android/* ./RtmpLivePushSDK/VideoCore/sources/Android
+cp ../jni/RtmpLivePushSDK/VideoCore/stream/Android/* ./RtmpLivePushSDK/VideoCore/stream/Android
+cp ../jni/RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android/* ./RtmpLivePushSDK/VideoCore/system/pixelBuffer/Android
+cp ../jni/RtmpLivePushSDK/VideoCore/transforms/Android/* ./RtmpLivePushSDK/VideoCore/transforms/Android
+

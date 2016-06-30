@@ -2,6 +2,25 @@
 #define __VC_SIMPLE_SESSION_H__
 
 #include <string>
+#include <memory>
+
+#include <videocore/rtmp/RTMPSession.h>
+#include <videocore/transforms/RTMP/AACPacketizer.h>
+#include <videocore/transforms/RTMP/H264Packetizer.h>
+#include <videocore/transforms/Split.h>
+#include <videocore/transforms/AspectTransform.h>
+#include <videocore/transforms/PositionTransform.h>
+
+#include <videocore/mixers/Android/AudioMixer.h>
+#include <videocore/transforms/Android/H264Encode.h>
+#include <videocore/sources/Android/PixelBufferSource.h>
+#include <videocore/sources/Android/CameraSource.h>
+#include <videocore/sources/Android/MicSource.h>
+#include <videocore/mixers/Android/GLESVideoMixer.h>
+#include <videocore/transforms/Android/AACEncode.h>
+#include <videocore/transforms/Android/H264Encode.h>
+
+#include <videocore/RtmpManager/LibRtmpSessionMgr.hpp>
 
 typedef struct {
     float x;
@@ -46,7 +65,9 @@ enum VCFilter {
     VCFilterSepia,
     VCFilterBeauty,
     VCFilterAntique
-};  
+};
+
+class PixelBufferOutput;
 
 class VCSessionDelegate {
 public:
@@ -66,7 +87,7 @@ public:
 public:
     void* _previewView;
     
-    std::shared_ptr<videocore::simpleApi::PixelBufferOutput> m_pbOutput;
+    std::shared_ptr<PixelBufferOutput> m_pbOutput;
     std::shared_ptr<videocore::Android::MicSource>               m_micSource;
     std::shared_ptr<videocore::Android::CameraSource>            m_cameraSource;
     std::shared_ptr<videocore::Android::PixelBufferSource>     m_pixelBufferSource;
@@ -86,14 +107,13 @@ public:
     
     std::shared_ptr<videocore::Split>       m_aacSplit;
     std::shared_ptr<videocore::Split>       m_h264Split;
-    std::shared_ptr<videocore::Android::MP4Multiplexer> m_muxer;
     
     std::shared_ptr<videocore::IOutputSession> m_outputSession;
     
     
     // properties
     
-    JobQueue *_graphManagementQueue;
+    videocore::JobQueue *_graphManagementQueue;
     
     CGSize _videoSize;
     int    _bitrate;
@@ -102,7 +122,7 @@ public:
     int    _bpsCeiling;
     int    _estimatedThroughput;
     
-    BOOL   _useInterfaceOrientation;
+    bool   _useInterfaceOrientation;
     float  _videoZoomFactor;
     int    _audioChannelCount;
     float  _audioSampleRate;
@@ -111,20 +131,20 @@ public:
     VCCameraState _cameraState;
     VCAspectMode _aspectMode;
     VCSessionState _rtmpSessionState;
-    BOOL   _orientationLocked;
-    BOOL   _torch;
+    bool   _orientationLocked;
+    bool   _torch;
     
-    BOOL _useAdaptiveBitrate;
-    BOOL _continuousAutofocus;
-    BOOL _continuousExposure;
+    bool _useAdaptiveBitrate;
+    bool _continuousAutofocus;
+    bool _continuousExposure;
     CGPoint _focusPOI;
     CGPoint _exposurePOI;
     
     VCFilter _filter;
 public:
     void setVideoSize(CGSize videoSize);
-    void setOrientationLocked(BOOL orientationLocked);
-    void setTorch(BOOL torch);
+    void setOrientationLocked(bool orientationLocked);
+    void setTorch(bool torch);
     void setAspectMode(VCAspectMode aspectMode);
     void setCameraState(VCCameraState cameraState);
     void setRtmpSessionState(VCSessionState rtmpSessionState);
@@ -132,15 +152,16 @@ public:
     void setAudioChannelCount(int channelCount);
     void setAudioSampleRate(float sampleRate);
     void setMicGain(float micGain);
-    void setContinuousAutofocus(BOOL continuousAutofocus);
-    void setContinuousExposure(BOOL continuousExposure);
+    void setContinuousAutofocus(bool continuousAutofocus);
+    void setContinuousExposure(bool continuousExposure);
     void setFocusPointOfInterest(CGPoint focusPointOfInterest);
     void setExposurePointOfInterest(CGPoint exposurePointOfInterest);
-    void setUseAdaptiveBitrate(BOOL useAdaptiveBitrate);
+    void setUseAdaptiveBitrate(bool useAdaptiveBitrate);
+    void setFilter(VCFilter filterToChange);
 public:
     VCSimpleSession(void *jvm, void *jcamera);
     void setupGraph();
-    void initWithVideoSize:(CGSize videoSize, int fps, int bps, BOOL useInterfaceOrientation, VCCameraState cameraState, VCAspectMode aspectMode);
+    void initWithVideoSize(CGSize videoSize, int fps, int bps, bool useInterfaceOrientation, VCCameraState cameraState, VCAspectMode aspectMode);
     void startRtmpSessionWithURL(std::string rtmpUrl);
     void endRtmpSession();
 };

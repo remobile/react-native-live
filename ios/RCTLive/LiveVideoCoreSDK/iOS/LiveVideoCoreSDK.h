@@ -36,43 +36,26 @@ typedef NS_ENUM(NSUInteger, LIVE_FRAMERATE) {
     LIVE_FRAMERATE_15=15
 };
 
-typedef NS_ENUM(NSInteger, LIVE_VCSessionState)
-{
-    LIVE_VCSessionStateNone,
-    LIVE_VCSessionStatePreviewStarted,
-    LIVE_VCSessionStateStarting,
-    LIVE_VCSessionStateStarted,
-    LIVE_VCSessionStateEnded,
-    LIVE_VCSessionStateError
-};
-
-typedef NS_ENUM(NSUInteger, LIVE_FILTER_TYPE) {
-    LIVE_FILTER_ORIGINAL,
-    LIVE_FILTER_BEAUTY,
-    LIVE_FILTER_ANTIQUE,
-    LIVE_FILTER_BLACK
-};
-
-@protocol LIVEVCSessionDelegate <NSObject>
-@required
-- (void) LiveConnectionStatusChanged: (LIVE_VCSessionState) sessionState;
-@end
-
-@interface LiveVideoCoreSDK : NSObject<VCSessionDelegate>
+@interface LiveVideoCoreSDK : NSObject
 
 + (instancetype)sharedinstance;
 
-@property (atomic, weak)   id<LIVEVCSessionDelegate> delegate;
+@property (atomic, weak)   id<VCSessionDelegate> delegate;
 @property (atomic, assign) float micGain;//0~1.0
 
-- (void)LiveInit:(NSString*)rtmpUrl Preview:(UIView*)previewView VideSize:(CGSize)videSize BitRate:(LIVE_BITRATE)iBitRate FrameRate:(LIVE_FRAMERATE)iFrameRate Delegate:(id<LIVEVCSessionDelegate>)delegate;
+- (void)LiveInit:(NSString*)rtmpUrl
+         Preview:(UIView*)previewView
+        VideSize:(CGSize)videSize
+         BitRate:(LIVE_BITRATE)iBitRate
+       FrameRate:(LIVE_FRAMERATE)iFrameRate
+     CameraState:(VCCameraState) cameraState
+      AspectMode:(VCAspectMode)aspectMode
+        Delegate:(id<VCSessionDelegate>)delegate;
 - (void)LiveRelease;
 
 - (void)setCameraFront:(Boolean)bCameraFrontFlag;
-- (void)setFilter:(LIVE_FILTER_TYPE) type;
+- (void)setFilter:(VCFilter) type;
 
 - (void)focuxAtPoint:(CGPoint)point;
-//VCSessionDelegate protocal
-- (void) connectionStatusChanged: (VCSessionState) sessionState;
 
 @end

@@ -64,6 +64,7 @@ namespace videocore { namespace Android {
         PixelBufferFormatType m_pixelFormat;
         PixelBufferState m_state;
         
+        bool m_temporary;
         bool m_locked;
     };
     

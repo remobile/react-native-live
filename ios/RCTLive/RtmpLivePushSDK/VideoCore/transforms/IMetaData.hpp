@@ -51,9 +51,15 @@ namespace videocore
     template <int32_t MetaDataType, typename... Types>
     struct MetaData : public IMetadata
     {
+#ifdef ANDROID
+        MetaData(double pts, double dts) : IMetadata(pts, dts) {};
+        MetaData(double ts) : IMetadata(ts) {};
+        MetaData() : IMetadata() {};
+#else //ANDROID
         MetaData<Types...>(double pts, double dts) : IMetadata(pts, dts) {};
         MetaData<Types...>(double ts) : IMetadata(ts) {};
         MetaData<Types...>() : IMetadata() {};
+#endif //ANDROID
         
         virtual const int32_t type() const { return MetaDataType; };
         

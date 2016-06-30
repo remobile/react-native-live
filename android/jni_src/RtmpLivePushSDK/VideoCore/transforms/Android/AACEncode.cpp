@@ -209,21 +209,6 @@ namespace videocore { namespace iOS {
         m_asc[0] = 0x10 | ((sampleRateIndex>>1) & 0x3);
         m_asc[1] = ((sampleRateIndex & 0x1)<<7) | ((channelCount & 0xF) << 3);
     }
-    OSStatus
-    AACEncode::ioProc(AudioConverterRef audioConverter, UInt32 *ioNumDataPackets, AudioBufferList* ioData, AudioStreamPacketDescription** ioPacketDesc, void* inUserData )
-    {
-        UserData* ud = static_cast<UserData*>(inUserData);
-        
-        UInt32 maxPackets = ud->size / ud->packetSize;
-        
-        *ioNumDataPackets = std::min(maxPackets, *ioNumDataPackets);
-        
-        ioData->mBuffers[0].mData = ud->data;
-        ioData->mBuffers[0].mDataByteSize = ud->size;
-        ioData->mBuffers[0].mNumberChannels = 1;
-        
-        return noErr;
-    }
     void
     AACEncode::pushBuffer(const uint8_t* const data, size_t size, IMetadata& metadata)
     {

@@ -23,53 +23,30 @@
 
  */
 
-#import <videocore/api/Android/VCSimpleSession.h>
-#import <videocore/api/Android/VCPreviewView.h>
-
-#include <videocore/rtmp/RTMPSession.h>
-#include <videocore/transforms/RTMP/AACPacketizer.h>
-#include <videocore/transforms/RTMP/H264Packetizer.h>
-#include <videocore/transforms/Split.h>
-#include <videocore/transforms/AspectTransform.h>
-#include <videocore/transforms/PositionTransform.h>
-
-#include <videocore/mixers/Apple/AudioMixer.h>
-#include <videocore/transforms/Apple/MP4Multiplexer.h>
-#include <videocore/transforms/Apple/H264Encode.h>
-#include <videocore/sources/Apple/PixelBufferSource.h>
-#include <videocore/sources/Android/CameraSource.h>
-#include <videocore/sources/Android/MicSource.h>
-#include <videocore/mixers/Android/GLESVideoMixer.h>
-#include <videocore/transforms/Android/AACEncode.h>
-#include <videocore/transforms/Android/H264Encode.h>
-#include <videocore/mixers/GenericAudioMixer.h>
-
-#include "LibRtmpSessionMgr.hpp"
+#import "VCSimpleSession.h"
+#import "VCPreviewView.h"
 
 static const int kMinVideoBitrate = 32000;
 
-namespace videocore { namespace simpleApi {
+using PixelBufferCallback = std::function<void(const uint8_t* const data, size_t size)>;
 
-    using PixelBufferCallback = std::function<void(const uint8_t* const data, size_t size)>;
+class PixelBufferOutput : public IOutput
+{
+public:
+    PixelBufferOutput(PixelBufferCallback callback)
+    : m_callback(callback) {};
 
-    class PixelBufferOutput : public IOutput
+    void pushBuffer(const uint8_t* const data,
+                    size_t size,
+                    IMetadata& metadata)
     {
-    public:
-        PixelBufferOutput(PixelBufferCallback callback)
-        : m_callback(callback) {};
+        m_callback(data, size);
+    }
 
-        void pushBuffer(const uint8_t* const data,
-                        size_t size,
-                        IMetadata& metadata)
-        {
-            m_callback(data, size);
-        }
+private:
 
-    private:
-
-        PixelBufferCallback m_callback;
-    };
-}}
+    PixelBufferCallback m_callback;
+};
 
 // -----------------------------------------------------------------------------
 //  VCSessionDelegate Methods
@@ -99,7 +76,7 @@ void VCSimpleSession::setVideoSize(CGSize videoSize)
     }
 }
 
-void VCSimpleSession::setOrientationLocked(BOOL orientationLocked)
+void VCSimpleSession::setOrientationLocked(bool orientationLocked)
 {
     _orientationLocked = orientationLocked;
     if(m_cameraSource) {
@@ -107,7 +84,7 @@ void VCSimpleSession::setOrientationLocked(BOOL orientationLocked)
     }
 }
 
-void VCSimpleSession::setTorch(BOOL torch)
+void VCSimpleSession::setTorch(bool torch)
 {
     if(m_cameraSource) {
         _torch = m_cameraSource->setTorch(torch);
@@ -191,7 +168,7 @@ void* getPreviewView()
 }
 
 
-void VCSimpleSession::setContinuousAutofocus(BOOL continuousAutofocus)
+void VCSimpleSession::setContinuousAutofocus(bool continuousAutofocus)
 {
     _continuousAutofocus = continuousAutofocus;
     if( m_cameraSource ) {
@@ -199,7 +176,7 @@ void VCSimpleSession::setContinuousAutofocus(BOOL continuousAutofocus)
     }
 }
 
-void VCSimpleSession::setContinuousExposure(BOOL continuousExposure)
+void VCSimpleSession::setContinuousExposure(bool continuousExposure)
 {
     _continuousExposure = continuousExposure;
     if(m_cameraSource) {
@@ -224,10 +201,43 @@ void VCSimpleSession::setExposurePointOfInterest(CGPoint exposurePointOfInterest
     }
 }
 
-void VCSimpleSession::setUseAdaptiveBitrate(BOOL useAdaptiveBitrate)
+void VCSimpleSession::setUseAdaptiveBitrate(bool useAdaptiveBitrate)
 {
     _useAdaptiveBitrate = useAdaptiveBitrate;
     _bpsCeiling = _bitrate;
+}
+
+
+void VCSimpleSession::setFilter(VCFilter filterToChange)
+{
+    std::string filterName = "com.videocore.filters.bgra";
+    
+    switch (filterToChange) {
+        case VCFilterNormal:
+            filterName = "com.videocore.filters.bgra";
+            break;
+        case VCFilterGray:
+            filterName = "com.videocore.filters.grayscale";
+            break;
+        case VCFilterInvertColors:
+            filterName = "com.videocore.filters.invertColors";
+            break;
+        case VCFilterSepia:
+            filterName = "com.videocore.filters.sepia";
+            break;
+        case VCFilterBeauty:
+            filterName = "com.videocore.filters.beauty";
+            break;
+        case VCFilterAntique:
+            filterName = "com.videocore.filters.antique";
+            break;
+        default:
+            break;
+    }
+    
+    _filter = filterToChange;
+    NSLog(@"FILTER IS : [%d]", (int)_filter);
+    m_videoMixer->setSourceFilter(m_cameraSource, dynamic_cast<videocore::IVideoFilter*>(m_videoMixer->filterFactory().filter(filterName))); // default is com.videocore.filters.bgra
 }
 
 // -----------------------------------------------------------------------------
@@ -238,8 +248,7 @@ VCSimpleSession::VCSimpleSession(void *jvm, void *jcamera)
 {
 }
 
-void VCSimpleSession::initWithVideoSize(int width, int height, int fps, int bps, BOOL useInterfaceOrientation,
-                        VCCameraState cameraState, VCAspectMode aspectMode)
+void VCSimpleSession::initWithVideoSize(int width, int height, int fps, int bps, bool useInterfaceOrientation, VCCameraState cameraState, VCAspectMode aspectMode)
 {
     _bps = bps;
     setVideoSize(width, height);
@@ -326,7 +335,6 @@ void VCSimpleSession::startSessionInternal(std::string rtmpUrl)
         auto audio = std::dynamic_pointer_cast<videocore::IEncoder>(m_aacEncoder );
         if(video && audio && _useAdaptiveBitrate) {
             if (delegate) {
-                delegate->detectedThroughput(predicted);
                 delegate->detectedThroughput(predicted, video->bitrate());
             }
             int videoBr = 0;
@@ -386,39 +394,6 @@ void VCSimpleSession::endRtmpSession()
     _bitrate = _bpsCeiling;
 
     rtmpSessionState = VCSessionStateEnded;
-}
-
-//Set property filter for the new enum + set dynamically the sourceFilter for the video mixer
-void VCSimpleSession::setFilter(VCFilter filterToChange)
-{
-    std::string filterName = "com.videocore.filters.bgra";
-    
-    switch (filterToChange) {
-        case VCFilterNormal:
-            filterName = "com.videocore.filters.bgra";
-            break;
-        case VCFilterGray:
-            filterName = "com.videocore.filters.grayscale";
-            break;
-        case VCFilterInvertColors:
-            filterName = "com.videocore.filters.invertColors";
-            break;
-        case VCFilterSepia:
-            filterName = "com.videocore.filters.sepia";
-            break;
-        case VCFilterBeauty:
-            filterName = "com.videocore.filters.beauty";
-            break;
-        case VCFilterAntique:
-            filterName = "com.videocore.filters.antique";
-            break;
-        default:
-            break;
-    }
-    
-    _filter = filterToChange;
-    NSLog(@"FILTER IS : [%d]", (int)_filter);
-    m_videoMixer->setSourceFilter(m_cameraSource, dynamic_cast<videocore::IVideoFilter*>(m_videoMixer->filterFactory().filter(filterName))); // default is com.videocore.filters.bgra
 }
 
 // -----------------------------------------------------------------------------
@@ -496,7 +471,6 @@ void setupGraph()
             m_aspectTransform = aspectTransform;
             m_positionTransform = positionTransform;
 
-            // Inform delegate that camera source has been added
             if (delegate) {
                 delegate->didAddCameraSource(this);
             }

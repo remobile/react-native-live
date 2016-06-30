@@ -35,7 +35,6 @@
 
 #include <iostream>
 #include <videocore/transforms/IEncoder.hpp>
-#include <AudioToolbox/AudioToolbox.h>
 #include <videocore/system/Buffer.hpp>
 
 namespace videocore { namespace iOS {
@@ -53,16 +52,8 @@ namespace videocore { namespace iOS {
         
         void setBitrate(int bitrate);
         const int bitrate() const { return m_bitrate; };
-        
     private:
-        static OSStatus ioProc(AudioConverterRef audioConverter, UInt32 *ioNumDataPackets, AudioBufferList* ioData, AudioStreamPacketDescription** ioPacketDesc, void* inUserData );
-        void makeAsc(uint8_t sampleRateIndex, uint8_t channelCount);
-    private:
-
-        AudioStreamBasicDescription m_in, m_out;
-        
         std::mutex              m_converterMutex;
-        AudioConverterRef       m_audioConverter;
         std::weak_ptr<IOutput>  m_output;
         size_t                  m_bytesPerSample;
         uint32_t                m_outputPacketMaxSize;

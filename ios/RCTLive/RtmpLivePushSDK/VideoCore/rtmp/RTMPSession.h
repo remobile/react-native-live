@@ -48,9 +48,6 @@ namespace videocore
 {
     class RTMPSession;
     
-    using BufStruct = struct { std::shared_ptr<Buffer> buf; std::chrono::steady_clock::time_point time; };
-    
-    
     enum {
         kRTMPSessionParameterWidth=0,
         kRTMPSessionParameterHeight,
@@ -140,8 +137,6 @@ namespace videocore
         TCPThroughputAdaptation m_throughputSession;
         
         uint64_t            m_previousTs;
-        
-        std::deque<BufStruct> m_streamOutQueue;
         
         std::map<int, uint64_t>             m_previousChunkData;
         std::unique_ptr<RingBuffer>         m_streamInBuffer;
