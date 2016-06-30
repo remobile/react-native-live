@@ -13,7 +13,7 @@
 #include <videocore/stream/IStreamSession.hpp>
 #include <videocore/stream/TCPThroughputAdaptation.h>
 
-#include <UriParser-cpp/UriParser.hpp>
+#include <UriParser/UriParser.hpp>
 
 #include <functional>
 #include <deque>

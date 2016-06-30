@@ -64,7 +64,7 @@ namespace videocore
     }
     
     unsigned int RTMP_Queue_Manager::GetQueueLength(){
-        unsigned int uiLen = _sendDataQueue.size();
+        unsigned int uiLen = (int)_sendDataQueue.size();
         
         return uiLen;
     }
@@ -152,7 +152,7 @@ namespace videocore
             unsigned char* pSendData = NULL;
             buf->read(&pSendData, size);
             int iRet = _rtmpSendQueueManager.InsertQueue(uiMsgTypeId,
-                                                         size,
+                                                         (int)size,
                                                          (unsigned int)ts,
                                                          pSendData);
             if (iRet != 0) {

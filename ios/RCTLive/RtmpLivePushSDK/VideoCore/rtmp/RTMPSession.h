@@ -29,7 +29,7 @@
 #include <videocore/stream/IStreamSession.hpp>
 #include <videocore/stream/TCPThroughputAdaptation.h>
 
-#include <UriParser-cpp/UriParser.hpp>
+#include <UriParser/UriParser.hpp>
 
 #include <functional>
 #include <deque>
@@ -42,11 +42,15 @@
 
 #include <videocore/rtmp/RTMPTypes.h>
 #include <videocore/system/Buffer.hpp>
+#include <videocore/system/PreBuffer.hpp>
 #include <videocore/transforms/IOutputSession.hpp>
 
 namespace videocore
 {
     class RTMPSession;
+    
+    using BufStruct = struct { std::shared_ptr<Buffer> buf; std::chrono::steady_clock::time_point time; };
+    
     
     enum {
         kRTMPSessionParameterWidth=0,
@@ -75,6 +79,7 @@ namespace videocore
         RTMPSession(std::string uri, RTMPSessionStateCallback callback);
         ~RTMPSession();
         
+        void connectServer();
     public:
         
         // Requires RTMPMetadata_t
@@ -90,7 +95,7 @@ namespace videocore
         
         
         
-        void streamStatusChanged(StreamStatus_t status);
+        void streamStatusChanged(StreamStatus_T status);
         void write(uint8_t* data, size_t size, std::chrono::steady_clock::time_point packetTime = std::chrono::steady_clock::now(), bool isKeyframe = false);
         void dataReceived();
         void setClientState(ClientState_t state);
@@ -111,14 +116,16 @@ namespace videocore
         void sendSetBufferTime(int milliseconds);
         
         void increaseBuffer(int64_t size);
-        
+        int  reassembleBuffer(uint8_t *p, int msgSize, int packageSize);
+        int  tryReadOneMessage(uint8_t *msg, int msgsize, int from_offset);
+
         bool parseCurrentData();
         void handleInvoke(uint8_t* p);
         bool handleMessage(uint8_t* p, uint8_t msgTypeId);
         
         std::string parseStatusCode(uint8_t *p);
         int32_t amfPrimitiveObjectSize(uint8_t* p);
-        
+        int32_t trackCommand(const std::string& cmd);
     private:
         JobQueue            m_networkQueue;
         JobQueue            m_jobQueue;
@@ -137,9 +144,13 @@ namespace videocore
         TCPThroughputAdaptation m_throughputSession;
         
         uint64_t            m_previousTs;
+        RTMPChunk_0         m_previousChunk;
+        
+        std::deque<BufStruct> m_streamOutQueue;
         
         std::map<int, uint64_t>             m_previousChunkData;
-        std::unique_ptr<RingBuffer>         m_streamInBuffer;
+//        std::unique_ptr<RingBuffer>         m_streamInBuffer;
+        std::unique_ptr<PreallocBuffer>     m_streamInBuffer;
         std::unique_ptr<IStreamSession>     m_streamSession;
         std::vector<uint8_t> m_outBuffer;
         http::url                       m_uri;
@@ -156,7 +167,7 @@ namespace videocore
         int64_t         m_bufferSize;
         
         int32_t         m_streamId;
-        int32_t         m_createStreamInvoke;
+//        int32_t         m_createStreamInvoke;
         int32_t         m_numberOfInvokes;
         int32_t         m_frameWidth;
         int32_t         m_frameHeight;

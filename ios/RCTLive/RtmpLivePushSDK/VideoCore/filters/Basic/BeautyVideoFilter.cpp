@@ -6,7 +6,7 @@
 //
 //
 
-#include "BeautyVideoFilter.hpp"
+#include <videocore/filters/Basic/BeautyVideoFilter.h>
 
 #include <TargetConditionals.h>
 

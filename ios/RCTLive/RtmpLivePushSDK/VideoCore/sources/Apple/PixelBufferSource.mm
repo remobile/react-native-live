@@ -24,7 +24,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <videocore/system/pixelBuffer/Apple/PixelBuffer.h>
-
+#import <AVFoundation/AVFoundation.h>
 #include <CoreVideo/CoreVideo.h>
 
 namespace videocore { namespace Apple {
@@ -35,15 +35,12 @@ namespace videocore { namespace Apple {
         CVPixelBufferRef pb = nullptr;
         CVReturn ret = kCVReturnSuccess;
         @autoreleasepool {
-#if TARGET_IPHONE_SIMULATOR 
-            NSDictionary* pixelBufferOptions = nil;
-#else
             NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA),
                 (NSString*) kCVPixelBufferWidthKey : @(width),
                 (NSString*) kCVPixelBufferHeightKey : @(height),
                 (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
                 (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
-#endif
+            
             ret = CVPixelBufferCreate(kCFAllocatorDefault, width, height, pixelFormat, (__bridge CFDictionaryRef)pixelBufferOptions, &pb);
         }
         if(!ret) {

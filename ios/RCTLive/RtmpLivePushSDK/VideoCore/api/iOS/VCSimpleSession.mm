@@ -52,8 +52,6 @@
 #   include <videocore/mixers/GenericAudioMixer.h>
 #endif
 
-#include "LibRtmpSessionMgr.hpp"
-
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 
@@ -266,8 +264,17 @@ namespace videocore { namespace simpleApi {
 - (void) setRtmpSessionState:(VCSessionState)rtmpSessionState
 {
     _rtmpSessionState = rtmpSessionState;
-    if(self.delegate) {
-        [self.delegate connectionStatusChanged:rtmpSessionState];
+    if (NSOperationQueue.currentQueue != NSOperationQueue.mainQueue) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // trigger in main thread, avoid autolayout engine exception
+            if(self.delegate) {
+                [self.delegate connectionStatusChanged:rtmpSessionState];
+            }
+        });
+    } else {
+        if (self.delegate) {
+            [self.delegate connectionStatusChanged:rtmpSessionState];
+        }
     }
 }
 - (VCSessionState) rtmpSessionState
@@ -293,10 +300,10 @@ namespace videocore { namespace simpleApi {
 }
 - (void) setAudioChannelCount:(int)channelCount
 {
-    _audioChannelCount = MIN(2, MAX(channelCount,2)); // We can only support a channel count of 2 with AAC
+    _audioChannelCount = MAX(1, MIN(channelCount, 2));
 
     if(m_audioMixer) {
-        m_audioMixer->setChannelCount(channelCount);
+        m_audioMixer->setChannelCount(_audioChannelCount);
     }
 }
 - (int) audioChannelCount
@@ -465,8 +472,8 @@ namespace videocore { namespace simpleApi {
 - (void) startSessionInternal: (NSString*)rtmpUrl
 {
     m_outputSession.reset(
-                          new videocore::LibRtmpSessionMgr ([rtmpUrl UTF8String],
-                                                      [=](videocore::LibRtmpSessionMgr& session,
+                          new videocore::RTMPSession ([rtmpUrl UTF8String],
+                                                      [=](videocore::RTMPSession& session,
                                                           ClientState_t state) {
 
                                                           DLog("ClientState: %d\n", state);
@@ -475,9 +482,6 @@ namespace videocore { namespace simpleApi {
 
                                                               case kClientStateConnected:
                                                                   self.rtmpSessionState = VCSessionStateStarting;
-                                                                  break;
-                                                              case kClientStateHandshake0:
-                                                                  self.rtmpSessionState = VCSessionStatePreviewStarted;
                                                                   break;
                                                               case kClientStateSessionStarted:
                                                               {
@@ -493,7 +497,6 @@ namespace videocore { namespace simpleApi {
                                                               case kClientStateError:
                                                                   self.rtmpSessionState = VCSessionStateError;
                                                                   [self endRtmpSession];
-                                                                  self->m_outputSession.reset();
                                                                   break;
                                                               case kClientStateNotConnected:
                                                                   self.rtmpSessionState = VCSessionStateEnded;
@@ -504,7 +507,7 @@ namespace videocore { namespace simpleApi {
 
                                                           }
 
-                                                      }));
+                                                      }) );
     VCSimpleSession* bSelf = self;
 
     _bpsCeiling = _bitrate;
@@ -523,7 +526,7 @@ namespace videocore { namespace simpleApi {
                                                   if ([bSelf.delegate respondsToSelector:@selector(detectedThroughput:videoRate:)]) {
                                                       [bSelf.delegate detectedThroughput:predicted videoRate:video->bitrate()];
                                                   }
-                                                  
+
 
                                                   int videoBr = 0;
 
@@ -565,7 +568,7 @@ namespace videocore { namespace simpleApi {
 
                                           });
 
-    videocore::LibRTMPSessionParameters_t sp ( 0. );
+    videocore::RTMPSessionParameters_t sp ( 0. );
 
     sp.setData(self.videoSize.width,
                self.videoSize.height,
@@ -578,11 +581,7 @@ namespace videocore { namespace simpleApi {
 }
 - (void) endRtmpSession
 {
-    if(m_outputSession == nil){
-        return;
-    }
-    m_outputSession->setEndFlag(1);
-    
+
     m_h264Packetizer.reset();
     m_aacPacketizer.reset();
     m_videoSplit->removeOutput(m_h264Encoder);
@@ -617,6 +616,12 @@ namespace videocore { namespace simpleApi {
                 break;
             case VCFilterSepia:
                 filterName = @"com.videocore.filters.sepia";
+                break;
+            case VCFilterFisheye:
+                filterName = @"com.videocore.filters.fisheye";
+                break;
+            case VCFilterGlow:
+                filterName = @"com.videocore.filters.glow";
                 break;
             case VCFilterBeauty:
                 filterName = @"com.videocore.filters.beauty";

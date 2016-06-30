@@ -1,5 +1,5 @@
 
-#include <videocore/filters/Basic/GrayscaleVideoFilter.h>
+#include <videocore/filters/Basic/GlowVideoFilter.h>
 
 #include <TargetConditionals.h>
 
@@ -15,28 +15,28 @@
 
 namespace videocore { namespace filters {
  
-    bool GrayscaleVideoFilter::s_registered = GrayscaleVideoFilter::registerFilter();
+    bool GlowVideoFilter::s_registered = GlowVideoFilter::registerFilter();
     
     bool
-    GrayscaleVideoFilter::registerFilter()
+    GlowVideoFilter::registerFilter()
     {
-        FilterFactory::_register("com.videocore.filters.grayscale", []() { return new GrayscaleVideoFilter(); });
+        FilterFactory::_register("com.videocore.filters.glow", []() { return new GlowVideoFilter(); });
         return true;
     }
     
-    GrayscaleVideoFilter::GrayscaleVideoFilter()
+    GlowVideoFilter::GlowVideoFilter()
     : IVideoFilter(), m_initialized(false), m_bound(false)
     {
         
     }
-    GrayscaleVideoFilter::~GrayscaleVideoFilter()
+    GlowVideoFilter::~GlowVideoFilter()
     {
         glDeleteProgram(m_program);
         glDeleteVertexArraysOES(1, &m_vao);
     }
     
     const char * const
-    GrayscaleVideoFilter::vertexKernel() const
+    GlowVideoFilter::vertexKernel() const
     {
         
         KERNEL(GL_ES2_3, m_language,
@@ -54,24 +54,40 @@ namespace videocore { namespace filters {
     }
     
     const char * const
-    GrayscaleVideoFilter::pixelKernel() const
+    GlowVideoFilter::pixelKernel() const
     {
         
          KERNEL(GL_ES2_3, m_language,
                precision mediump float;
                varying vec2      vCoord;
                uniform sampler2D uTex0;
+               const float step_w = 0.0015625;
+               const float step_h = 0.0027778;
                void main(void) {
-                   vec4 color = texture2D(uTex0, vCoord);
-                   float gray = dot(color.rgb, vec3(0.3, 0.59, 0.11));
-                   gl_FragColor = vec4(gray, gray, gray, color.a);
+                   vec3 t1 = texture2D(uTex0, vec2(vCoord.x - step_w, vCoord.y - step_h)).bgr;
+                   vec3 t2 = texture2D(uTex0, vec2(vCoord.x, vCoord.y - step_h)).bgr;
+                   vec3 t3 = texture2D(uTex0, vec2(vCoord.x + step_w, vCoord.y - step_h)).bgr;
+                   vec3 t4 = texture2D(uTex0, vec2(vCoord.x - step_w, vCoord.y)).bgr;
+                   vec3 t5 = texture2D(uTex0, vCoord).bgr;
+                   vec3 t6 = texture2D(uTex0, vec2(vCoord.x + step_w, vCoord.y)).bgr;
+                   vec3 t7 = texture2D(uTex0, vec2(vCoord.x - step_w, vCoord.y + step_h)).bgr;
+                   vec3 t8 = texture2D(uTex0, vec2(vCoord.x, vCoord.y + step_h)).bgr;
+                   vec3 t9 = texture2D(uTex0, vec2(vCoord.x + step_w, vCoord.y + step_h)).bgr;
+                   
+                   vec3 xx= t1 + 2.0*t2 + t3 - t7 - 2.0*t8 - t9;
+                   vec3 yy = t1 - t3 + 2.0*t4 - 2.0*t6 + t7 - t9;
+                   
+                   vec3 rr = sqrt(xx * xx + yy * yy);
+                   
+                   gl_FragColor.a = 1.0;
+                   gl_FragColor.rgb = rr * 2.0 * t5;
                }
         )
         
         return nullptr;
     }
     void
-    GrayscaleVideoFilter::initialize()
+    GlowVideoFilter::initialize()
     {
         switch(m_language) {
             case GL_ES2_3:
@@ -96,7 +112,7 @@ namespace videocore { namespace filters {
         }
     }
     void
-    GrayscaleVideoFilter::bind()
+    GlowVideoFilter::bind()
     {
         switch(m_language) {
             case GL_ES2_3:
@@ -115,7 +131,7 @@ namespace videocore { namespace filters {
         }
     }
     void
-    GrayscaleVideoFilter::unbind()
+    GlowVideoFilter::unbind()
     {
         m_bound = false;
     }

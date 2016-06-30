@@ -83,8 +83,7 @@ namespace videocore { namespace iOS {
     m_orientationLocked(false),
     m_torchOn(false),
     m_useInterfaceOrientation(false),
-    m_captureSession(nullptr),
-    m_bCameraFontFlag(false)
+    m_captureSession(nullptr)
     {}
     
     CameraSource::~CameraSource()
@@ -257,21 +256,26 @@ namespace videocore { namespace iOS {
         AVCaptureSession* session = (AVCaptureSession*)m_captureSession;
         
         [session beginConfiguration];
-        AVCaptureDeviceInput* currentCameraInput = [session.inputs objectAtIndex:0];
         
-        if(currentCameraInput.device.torchAvailable) {
-            NSError* err = nil;
-            if([currentCameraInput.device lockForConfiguration:&err]) {
-                [currentCameraInput.device setTorchMode:( torchOn ? AVCaptureTorchModeOn : AVCaptureTorchModeOff ) ];
-                [currentCameraInput.device unlockForConfiguration];
-                ret = (currentCameraInput.device.torchMode == AVCaptureTorchModeOn);
+        if (session.inputs.count > 0) {
+            AVCaptureDeviceInput* currentCameraInput = [session.inputs objectAtIndex:0];
+            
+            if(currentCameraInput.device.torchAvailable) {
+                NSError* err = nil;
+                if([currentCameraInput.device lockForConfiguration:&err]) {
+                    [currentCameraInput.device setTorchMode:( torchOn ? AVCaptureTorchModeOn : AVCaptureTorchModeOff ) ];
+                    [currentCameraInput.device unlockForConfiguration];
+                    ret = (currentCameraInput.device.torchMode == AVCaptureTorchModeOn);
+                } else {
+                    NSLog(@"Error while locking device for torch: %@", err);
+                    ret = false;
+                }
             } else {
-                NSLog(@"Error while locking device for torch: %@", err);
-                ret = false;
+                NSLog(@"Torch not available in current camera input");
             }
-        } else {
-            NSLog(@"Torch not available in current camera input");
+
         }
+        
         [session commitConfiguration];
         m_torchOn = ret;
         return ret;
@@ -288,32 +292,32 @@ namespace videocore { namespace iOS {
             [session beginConfiguration];
             [(AVCaptureDevice*)m_captureDevice lockForConfiguration: &error];
             
-            AVCaptureInput* currentCameraInput = [session.inputs objectAtIndex:0];
-            
-            [session removeInput:currentCameraInput];
-            [(AVCaptureDevice*)m_captureDevice unlockForConfiguration];
-            
-            AVCaptureDevice *newCamera = nil;
-            if(((AVCaptureDeviceInput*)currentCameraInput).device.position == AVCaptureDevicePositionBack)
-            {
-                m_bCameraFontFlag = true;
-                newCamera = (AVCaptureDevice*)cameraWithPosition(AVCaptureDevicePositionFront);
+            if (session.inputs.count > 0) {
+                AVCaptureInput* currentCameraInput = [session.inputs objectAtIndex:0];
+                
+                [session removeInput:currentCameraInput];
+                [(AVCaptureDevice*)m_captureDevice unlockForConfiguration];
+                
+                AVCaptureDevice *newCamera = nil;
+                if(((AVCaptureDeviceInput*)currentCameraInput).device.position == AVCaptureDevicePositionBack)
+                {
+                    newCamera = (AVCaptureDevice*)cameraWithPosition(AVCaptureDevicePositionFront);
+                }
+                else
+                {
+                    newCamera = (AVCaptureDevice*)cameraWithPosition(AVCaptureDevicePositionBack);
+                }
+                
+                AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:newCamera error:nil];
+                [newCamera lockForConfiguration:&error];
+                [session addInput:newVideoInput];
+                
+                m_captureDevice = newCamera;
+                [newCamera unlockForConfiguration];
+                [session commitConfiguration];
+                
+                [newVideoInput release];
             }
-            else
-            {
-                m_bCameraFontFlag = false;
-                newCamera = (AVCaptureDevice*)cameraWithPosition(AVCaptureDevicePositionBack);
-            }
-            
-            AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:newCamera error:nil];
-            [newCamera lockForConfiguration:&error];
-            [session addInput:newVideoInput];
-            
-            m_captureDevice = newCamera;
-            [newCamera unlockForConfiguration];
-            [session commitConfiguration];
-            
-            [newVideoInput release];
             
             reorientCamera();
         }
@@ -338,11 +342,7 @@ namespace videocore { namespace iOS {
         
         for (AVCaptureVideoDataOutput* output in session.outputs) {
             for (AVCaptureConnection * av in output.connections) {
-                if (m_bCameraFontFlag) {
-                    av.videoMirrored = YES;
-                }else{
-                    av.videoMirrored = NO;
-                }
+                
                 switch (orientation) {
                         // UIInterfaceOrientationPortraitUpsideDown, UIDeviceOrientationPortraitUpsideDown
                     case UIInterfaceOrientationPortraitUpsideDown:
@@ -464,6 +464,9 @@ namespace videocore { namespace iOS {
             NSError* err = nil;
             if([device lockForConfiguration:&err]) {
                 [device setFocusPointOfInterest:CGPointMake(x, y)];
+                if (device.focusMode == AVCaptureFocusModeLocked) {
+                    [device setFocusMode:AVCaptureFocusModeAutoFocus];
+                }
                 device.focusMode = device.focusMode;
                 [device unlockForConfiguration];
             } else {

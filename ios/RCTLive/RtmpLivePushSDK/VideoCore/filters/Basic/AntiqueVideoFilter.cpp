@@ -6,7 +6,7 @@
 //
 //
 
-#include "AntiqueVideoFilter.hpp"
+#include <videocore/filters/Basic/AntiqueVideoFilter.h>
 #include <TargetConditionals.h>
 
 
