@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B7BBA81F1CA3BEC900D05AEF /* UriCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA7551CA3BEC800D05AEF /* UriCodec.cpp */; };
 		B7BBA8201CA3BEC900D05AEF /* VCPreviewView.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA75B1CA3BEC800D05AEF /* VCPreviewView.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		B7BBA8211CA3BEC900D05AEF /* VCSimpleSession.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA75D1CA3BEC800D05AEF /* VCSimpleSession.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		B7BBA8221CA3BEC900D05AEF /* BeautyVideoFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7BBA75E1CA3BEC800D05AEF /* BeautyVideoFilter.cpp */; };
@@ -7005,7 +7004,6 @@
 		B7BBA5511CA3BEC700D05AEF /* wrap.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = wrap.hpp; sourceTree = "<group>"; };
 		B7BBA5521CA3BEC700D05AEF /* wrap.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap.inl; sourceTree = "<group>"; };
 		B7BBA5541CA3BEC700D05AEF /* xstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xstream.hpp; sourceTree = "<group>"; };
-		B7BBA7551CA3BEC800D05AEF /* UriCodec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UriCodec.cpp; sourceTree = "<group>"; };
 		B7BBA7561CA3BEC800D05AEF /* UriParser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = UriParser.hpp; sourceTree = "<group>"; };
 		B7BBA75A1CA3BEC800D05AEF /* VCPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VCPreviewView.h; sourceTree = "<group>"; };
 		B7BBA75B1CA3BEC800D05AEF /* VCPreviewView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VCPreviewView.mm; sourceTree = "<group>"; };
@@ -18607,7 +18605,6 @@
 		B7BBA7521CA3BEC800D05AEF /* UriParser-cpp */ = {
 			isa = PBXGroup;
 			children = (
-				B7BBA7551CA3BEC800D05AEF /* UriCodec.cpp */,
 				B7BBA7561CA3BEC800D05AEF /* UriParser.hpp */,
 			);
 			path = "UriParser-cpp";
@@ -19094,7 +19091,6 @@
 				B7BBA8451CA3BEC900D05AEF /* Split.cpp in Sources */,
 				B7BBA8231CA3BEC900D05AEF /* AntiqueVideoFilter.cpp in Sources */,
 				B7BBA83E1CA3BEC900D05AEF /* MP4Multiplexer.mm in Sources */,
-				B7BBA81F1CA3BEC900D05AEF /* UriCodec.cpp in Sources */,
 				B7BBA8241CA3BEC900D05AEF /* BasicVideoFilterBGRA.cpp in Sources */,
 				B7BBA8351CA3BEC900D05AEF /* PixelBufferSource.mm in Sources */,
 				B7BBA8371CA3BEC900D05AEF /* MicSource.mm in Sources */,
